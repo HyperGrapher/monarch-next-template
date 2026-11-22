@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { isMultilingual, localePath, locales, ogLocales, type Locale } from '../config/locales'
 import type { Media } from '../payload-types'
+import { localUrl } from './media'
 
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/$/, '')
 
@@ -20,7 +21,7 @@ export function buildMetadata(opts: {
   const title = seo?.title || opts.title || opts.siteName || undefined
   const description = seo?.description || opts.description || undefined
   const imageDoc = seo?.image ?? opts.fallbackImage
-  const image = imageDoc && typeof imageDoc !== 'number' && imageDoc.url ? [{ url: `${siteUrl()}${imageDoc.url}`, width: imageDoc.width ?? undefined, height: imageDoc.height ?? undefined }] : undefined
+  const image = imageDoc && typeof imageDoc !== 'number' && imageDoc.url ? [{ url: `${siteUrl()}${localUrl(imageDoc.url)}`, width: imageDoc.width ?? undefined, height: imageDoc.height ?? undefined }] : undefined
   const url = `${siteUrl()}${localePath(locale, path)}`
   return {
     title,

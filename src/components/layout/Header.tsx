@@ -33,12 +33,17 @@ export function Header({ locale, name, nav, contact, email, phone, address, labe
   const toggle = useRef<HTMLButtonElement>(null)
   const overlay = useRef<HTMLDivElement>(null)
   const openRef = useRef(open)
-  openRef.current = open
+  useEffect(() => {
+    openRef.current = open
+  }, [open])
   const here = stripLocale(pathname, locale)
 
-  // Close the menu after navigation
-  // biome-ignore lint/correctness/useExhaustiveDependencies: close on route change
-  useEffect(() => setOpen(false), [pathname])
+  // Close the menu after navigation (adjust state during render, not in an effect)
+  const [lastPath, setLastPath] = useState(pathname)
+  if (lastPath !== pathname) {
+    setLastPath(pathname)
+    setOpen(false)
+  }
 
   // Hide on deliberate downward travel, show on deliberate upward travel.
   useEffect(() => {
