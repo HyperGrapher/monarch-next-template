@@ -51,6 +51,13 @@ const cloudflareLogger = {
   silent: () => {},
 } as any // Use PayloadLogger type when it's exported
 
+// Loud error for missing secret
+const secret = process.env.PAYLOAD_SECRET
+if (!secret && process.env.NEXT_PHASE !== 'phase-production-build') {
+  throw new Error('PAYLOAD_SECRET is not set')
+}
+
+
 const cloudflare =
   isCLI || !isProduction
     ? await getCloudflareContextFromWrangler()
@@ -66,7 +73,7 @@ export default buildConfig({
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || (() => { throw new Error('PAYLOAD_SECRET is not set') })(),
+  secret: secret || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
