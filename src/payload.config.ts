@@ -64,7 +64,8 @@ const cloudflare =
     : await getCloudflareContext({ async: true })
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://monarch-next-template.burakmestan.workers.dev',
+  // serverURL: process.env.PAYLOAD_SERVER_URL || 'https://monarch-next-template.burakmestan.workers.dev',
+  serverURL:'https://monarch-next-template.burakmestan.workers.dev',
   admin: {
     user: Users.slug,
     importMap: {
@@ -80,7 +81,13 @@ export default buildConfig({
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   // logger: isProduction ? cloudflareLogger : undefined,
   // logger: isProduction ? cloudflareLogger : cloudflareLogger,
-  logger: undefined,
+logger: {
+  ...cloudflareLogger,
+  error: (e: unknown) =>
+    console.error('[payload]', e instanceof Error ? `${e.message} :: ${e.stack}` : JSON.stringify(e)),
+  warn: (e: unknown) =>
+    console.warn('[payload]', e instanceof Error ? `${e.message} :: ${e.stack}` : JSON.stringify(e)),
+},
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,

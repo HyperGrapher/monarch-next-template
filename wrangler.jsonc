@@ -13,7 +13,8 @@
   ],
   "observability": { "enabled": true },
   "vars": {
-    "NEXT_PUBLIC_SERVER_URL": "https://monarch-next-template.burakmestan.workers.dev"
+    "NEXT_PUBLIC_SERVER_URL": "https://monarch-next-template.burakmestan.workers.dev",
+    "PAYLOAD_SERVER_URL": "https://monarch-next-template.burakmestan.workers.dev"
   },
   "assets": {
     "directory": ".open-next/assets",
