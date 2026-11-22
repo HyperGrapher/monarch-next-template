@@ -23,13 +23,28 @@
       "remote": true,
     },
   ],
-  "services": [
+  // "services": [
     // The service should match the "name" of your worker
     // {
     //   "binding": "WORKER_SELF_REFERENCE",
     //   "service": "my-app"
     // },
-  ],
+  // ],
+
+  "durable_objects": {
+  "bindings": [
+    { "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
+    { "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" },
+    { "name": "NEXT_CACHE_DO_PURGE", "class_name": "BucketCachePurge" }
+  ]
+},
+"migrations": [
+  { "tag": "v1", "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"] }
+],
+"services": [
+  { "binding": "WORKER_SELF_REFERENCE", "service": "monarch-next-template" }
+],
+
   "r2_buckets": [
     {
       "binding": "R2",
