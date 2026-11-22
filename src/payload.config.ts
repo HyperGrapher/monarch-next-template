@@ -57,6 +57,7 @@ const cloudflare =
     : await getCloudflareContext({ async: true })
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://monarch-next-template.burakmestan.workers.dev',
   admin: {
     user: Users.slug,
     importMap: {
@@ -65,12 +66,13 @@ export default buildConfig({
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: process.env.PAYLOAD_SECRET || (() => { throw new Error('PAYLOAD_SECRET is not set') })()
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
-  logger: isProduction ? cloudflareLogger : undefined,
+  // logger: isProduction ? cloudflareLogger : undefined,
+  logger: isProduction ? cloudflareLogger : cloudflareLogger,
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
