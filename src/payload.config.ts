@@ -95,6 +95,9 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  auth: {
+    passwordHashIterations: 100000,
+  },
   collections: [Users, Media],
   editor: lexicalEditor(),
   secret: secret || '',
