@@ -79,7 +79,8 @@ export default buildConfig({
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
   // logger: isProduction ? cloudflareLogger : undefined,
-  logger: isProduction ? cloudflareLogger : cloudflareLogger,
+  // logger: isProduction ? cloudflareLogger : cloudflareLogger,
+  logger: undefined,
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
