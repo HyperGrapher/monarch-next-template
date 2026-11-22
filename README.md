@@ -1,9 +1,5 @@
 # Payload Cloudflare Template
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/payloadcms/payload/tree/3.x/templates/with-cloudflare-d1)
-
-**This can only be deployed on Paid Workers right now due to size limits.** This template comes configured with the bare minimum to get started on anything you need.
-
 ## Quick start
 
 This template can be deployed directly to Cloudflare Workers by clicking the button to take you to the setup screen.
