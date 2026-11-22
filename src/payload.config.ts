@@ -59,10 +59,16 @@ const cloudflareLogger = {
 
 const logger = {
   level: process.env.PAYLOAD_LOG_LEVEL || 'info',
+  
   info: (m: any) => console.log('[payload]', m),
   debug: (m: any) => console.log('[payload]', m),
   warn: (m: any) => console.warn('[payload]', typeof m === 'string' ? m : m?.message),
-  error: (e: any) => console.error('[payload]', e?.name, '|', e?.message, '|', e?.stack),
+  error: (e: any) => {
+    const dump = (o: any) =>
+      o ? Object.getOwnPropertyNames(o).map(k => `${k}=${String(o[k]).slice(0, 300)}`).join(' || ') : 'none'
+    console.error('[payload]', 'E:', dump(e), '| ERR:', dump(e?.err))
+  },
+
   silent: () => {},
 
 } as any
