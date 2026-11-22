@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+
+/* ── Design tokens: the "Monarch" preset. A new client replaces these values. ─────────── */
+@theme {
+	--font-sans: "Archivo Variable", "Helvetica Neue", Arial, sans-serif;
+
+	/* Keep --color-paper in sync with brandConfig.paperColor (src/config/brand.ts) */
+	--color-ink: #0f0d14;
+	--color-charcoal: #1b1822;
+	--color-graphite: #4a4655;
+	--color-ash: #6b6677;
+	--color-rule: #cfc8da;
+	--color-mist: #e6e0ee;
+	--color-paper: #f3eff7;
+	--color-signal: #ff4d1a;
+
+	--spacing-gutter: clamp(1rem, 4.1vw, 4.5rem);
+	--spacing-section: clamp(5rem, 11vw, 11rem);
+
+	--ease-arch: cubic-bezier(0.65, 0, 0.35, 1);
+	--ease-out-arch: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+html { background: var(--color-paper); -webkit-text-size-adjust: 100%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+html, body { min-height: 100%; }
+body {
+	margin: 0;
+	background: var(--color-paper);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+::selection { background: var(--color-signal); color: var(--color-ink); }
+
+@utility t-statement { font-size: clamp(2rem, 0.8rem + 5.4vw, 7rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.045em; }
+@utility t-display { font-size: clamp(3rem, 1rem + 9vw, 11rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.05em; }
+@utility t-heading { font-size: clamp(1.75rem, 1rem + 2.4vw, 3.5rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.035em; }
+@utility t-lead { font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.875rem); font-weight: 500; line-height: 1.3; letter-spacing: -0.02em; }
+@utility t-body { font-size: 1rem; line-height: 1.65; color: var(--color-graphite); }
+@utility t-meta { font-size: 0.8125rem; line-height: 1.45; }
+@utility t-label { font-size: 0.6875rem; font-weight: 600; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.16em; font-stretch: 120%; }
+
+/* Underline that draws on hover/focus */
+@utility link-draw {
+	background-image: linear-gradient(currentColor, currentColor);
+	background-repeat: no-repeat;
+	background-position: 0 100%;
+	background-size: 0% 2px;
+	transition: background-size 0.35s var(--ease-out-arch);
+	&:hover, &:focus-visible, &[aria-current="true"] { background-size: 100% 2px; }
+}
+
+/* Rich text from Payload (Lexical) — readable article typography */
+.prose-monarch { color: var(--color-graphite); font-size: 1.0625rem; line-height: 1.7; }
+.prose-monarch > * + * { margin-top: 1.1em; }
+.prose-monarch h2 { color: var(--color-ink); font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.035em; margin-top: 2em; }
+.prose-monarch h3 { color: var(--color-ink); font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 1.6em; }
+.prose-monarch a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.prose-monarch ul { list-style: square; padding-left: 1.25em; }
+.prose-monarch ol { list-style: decimal; padding-left: 1.25em; }
+.prose-monarch blockquote { border-left: 3px solid var(--color-ink); padding-left: 1.25em; color: var(--color-ink); font-size: 1.25rem; line-height: 1.4; font-weight: 500; }
+.prose-monarch strong { color: var(--color-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

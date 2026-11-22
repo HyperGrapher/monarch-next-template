@@ -1,5 +1,7 @@
-/** Page background color. Change this one value to restyle the whole page. */
-export const BG_COLOR = "#F3EFF7";
+import { brandConfig } from "../../config/brand";
+
+/** Page background colour: one constant in src/config/brand.ts (keep in sync with --color-paper). */
+export const BG_COLOR = brandConfig.paperColor;
 
 function hexToRgb(hex: string): [number, number, number] {
 	const n = Number.parseInt(hex.replace("#", ""), 16);

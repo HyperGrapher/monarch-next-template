@@ -1,7 +1,12 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
+import { defaultLocale } from './src/config/locales'
 
 const nextConfig: NextConfig = {
+  // Deterministic root redirect to the default locale (no client-side language sniffing).
+  async redirects() {
+    return [{ source: '/', destination: `/${defaultLocale}`, permanent: false }]
+  },
   images: {
     localPatterns: [
       {
