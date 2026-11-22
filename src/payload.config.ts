@@ -15,13 +15,6 @@ import { Media } from './collections/Media'
 console.log('[boot] secretLen=', (process.env.PAYLOAD_SECRET || '').length,
             'serverURL=', process.env.PAYLOAD_SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL)
 
-// 2. logger that actually prints the message
-logger: {
-  info: (m: any) => console.log('[payload]', m),
-  debug: (m: any) => console.log('[payload]', m),
-  warn: (m: any) => console.warn('[payload]', typeof m === 'string' ? m : m?.message),
-  error: (e: any) => console.error('[payload]', e?.name, '|', e?.message, '|', e?.stack),
-},
 
 
 const filename = fileURLToPath(import.meta.url)
