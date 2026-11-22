@@ -58,11 +58,14 @@ const cloudflareLogger = {
 } as any // Use PayloadLogger type when it's exported
 
 const logger = {
+  level: process.env.PAYLOAD_LOG_LEVEL || 'info',
   info: (m: any) => console.log('[payload]', m),
   debug: (m: any) => console.log('[payload]', m),
   warn: (m: any) => console.warn('[payload]', typeof m === 'string' ? m : m?.message),
   error: (e: any) => console.error('[payload]', e?.name, '|', e?.message, '|', e?.stack),
-} 
+  silent: () => {},
+
+} as any
 
 
 // Loud error for missing secret
