@@ -10,6 +10,16 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Pages } from './collections/Pages'
+import { Services } from './collections/Services'
+import { Projects } from './collections/Projects'
+import { Posts } from './collections/Posts'
+import { Categories } from './collections/Categories'
+import { ContactSubmissions } from './collections/ContactSubmissions'
+import { SiteSettings } from './globals/SiteSettings'
+import { HomePage } from './globals/HomePage'
+import { ServicesLanding, ProjectsLanding, JournalLanding, ContactPage } from './globals/landings'
+import { defaultLocale, localeLabels, locales } from './config/locales'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -92,7 +102,14 @@ export default buildConfig({
   auth: {
     passwordHashIterations: 100000,
   },
-  collections: [Users, Media],
+  collections: [Users, Pages, Services, Projects, Posts, Categories, Media, ContactSubmissions],
+  globals: [SiteSettings, HomePage, ServicesLanding, ProjectsLanding, JournalLanding, ContactPage],
+  localization: {
+    locales: locales.map((code) => ({ code, label: localeLabels[code] })),
+    defaultLocale,
+    // No silent fallback: a missing translation must stay visible to editors (and handled on the frontend).
+    fallback: false,
+  },
   editor: lexicalEditor(),
   secret: secret || '',
   typescript: {

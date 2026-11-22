@@ -68,7 +68,13 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    pages: Page;
+    services: Service;
+    projects: Project;
+    posts: Post;
+    categories: Category;
     media: Media;
+    'contact-submissions': ContactSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -77,7 +83,13 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -86,10 +98,24 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('tr' | 'en') | ('tr' | 'en')[];
+  globals: {
+    'site-settings': SiteSetting;
+    'home-page': HomePage;
+    'services-landing': ServicesLanding;
+    'projects-landing': ProjectsLanding;
+    'journal-landing': JournalLanding;
+    'contact-page': ContactPage;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'services-landing': ServicesLandingSelect<false> | ServicesLandingSelect<true>;
+    'projects-landing': ProjectsLandingSelect<false> | ProjectsLandingSelect<true>;
+    'journal-landing': JournalLandingSelect<false> | JournalLandingSelect<true>;
+    'contact-page': ContactPageSelect<false> | ContactPageSelect<true>;
+  };
+  locale: 'tr' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -123,6 +149,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  roles: ('admin' | 'editor')[];
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -145,11 +172,74 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * Short lead paragraph under the title (1–2 sentences).
+   */
+  intro?: string | null;
+  featuredImage?: (number | null) | Media;
+  /**
+   * Add, remove and drag sections to reorder them.
+   */
+  layout?:
+    | (
+        | HeroBlock
+        | RichTextBlock
+        | TextImageBlock
+        | GalleryBlock
+        | StatsBlock
+        | ServicesGridBlock
+        | ProjectsGridBlock
+        | TestimonialsBlock
+        | CtaBlock
+        | FaqBlock
+      )[]
+    | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL part. Same in all languages. Generated from the title if left empty.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: number;
+  /**
+   * Describe what is visible (form, material, light). Required for accessibility; translate per language.
+   */
   alt: string;
+  caption?: string | null;
+  /**
+   * Photographer / source / licence note.
+   */
+  credit?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -160,6 +250,446 @@ export interface Media {
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  /**
+   * Small label above the heading.
+   */
+  eyebrow?: string | null;
+  /**
+   * Keep under ~60 characters.
+   */
+  heading: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Landscape, at least 2000 px wide.
+   */
+  image?: (number | null) | Media;
+  ctas?:
+    | {
+        label: string;
+        /**
+         * Internal path like /projects or /contact (language prefix is added automatically), or a full https:// URL.
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  layout?: ('split' | 'stacked') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  heading?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  width?: ('narrow' | 'wide') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextImageBlock".
+ */
+export interface TextImageBlock {
+  heading: string;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Shown at its natural ratio; portrait or landscape both work.
+   */
+  image: number | Media;
+  imagePosition?: ('right' | 'left') | null;
+  background?: ('paper' | 'mist') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'textImage';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock".
+ */
+export interface GalleryBlock {
+  images: {
+    image: number | Media;
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  layout?: ('staggered' | 'grid') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock".
+ */
+export interface StatsBlock {
+  heading?: string | null;
+  items: {
+    /**
+     * e.g. 63, 15+, 11
+     */
+    value: string;
+    label: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'stats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ServicesGridBlock".
+ */
+export interface ServicesGridBlock {
+  heading?: string | null;
+  intro?: string | null;
+  /**
+   * Leave empty to show every service.
+   */
+  services?: (number | Service)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'servicesGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: number;
+  title: string;
+  /**
+   * Shown on cards and lists. 1–2 sentences.
+   */
+  summary: string;
+  coverImage?: (number | null) | Media;
+  layout?:
+    | (
+        | HeroBlock
+        | RichTextBlock
+        | TextImageBlock
+        | GalleryBlock
+        | StatsBlock
+        | ServicesGridBlock
+        | ProjectsGridBlock
+        | TestimonialsBlock
+        | CtaBlock
+        | FaqBlock
+      )[]
+    | null;
+  relatedProjects?: (number | Project)[] | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL part. Same in all languages. Generated from the title if left empty.
+   */
+  slug: string;
+  /**
+   * Lower numbers come first.
+   */
+  order?: number | null;
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectsGridBlock".
+ */
+export interface ProjectsGridBlock {
+  heading?: string | null;
+  intro?: string | null;
+  /**
+   * Leave empty to show the latest featured projects.
+   */
+  projects?: (number | Project)[] | null;
+  /**
+   * Used when no projects are selected.
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectsGrid';
+}
+/**
+ * All projects in this demo are fictional.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  /**
+   * One or two sentences for cards and the project header.
+   */
+  summary: string;
+  /**
+   * Shown at its natural ratio — no cropping.
+   */
+  coverImage: number | Media;
+  gallery?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  layout?:
+    | (
+        | HeroBlock
+        | RichTextBlock
+        | TextImageBlock
+        | GalleryBlock
+        | StatsBlock
+        | ServicesGridBlock
+        | ProjectsGridBlock
+        | TestimonialsBlock
+        | CtaBlock
+        | FaqBlock
+      )[]
+    | null;
+  type: 'cultural' | 'residential' | 'housing' | 'public' | 'commercial' | 'interiors';
+  /**
+   * City, Country
+   */
+  location: string;
+  year: number;
+  areaM2?: number | null;
+  status: 'built' | 'inConstruction';
+  relatedServices?: (number | Service)[] | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL part. Same in all languages. Generated from the title if left empty.
+   */
+  slug: string;
+  /**
+   * Lower numbers come first.
+   */
+  order?: number | null;
+  featured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock".
+ */
+export interface TestimonialsBlock {
+  /**
+   * Only publish quotes you are permitted to use. Demo entries are fictional.
+   */
+  heading?: string | null;
+  items: {
+    quote: string;
+    name: string;
+    role?: string | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock".
+ */
+export interface CtaBlock {
+  heading: string;
+  description?: string | null;
+  buttonLabel: string;
+  /**
+   * Internal path like /projects or /contact (language prefix is added automatically), or a full https:// URL.
+   */
+  buttonUrl: string;
+  background?: ('ink' | 'mist' | 'paper') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock".
+ */
+export interface FaqBlock {
+  heading?: string | null;
+  items: {
+    question: string;
+    answer: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  excerpt: string;
+  featuredImage: number | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  /**
+   * URL part. Same in all languages. Generated from the title if left empty.
+   */
+  slug: string;
+  publishedAt?: string | null;
+  author?: string | null;
+  categories?: (number | Category)[] | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  description?: string | null;
+  /**
+   * URL part. Same in all languages. Generated from the title if left empty.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions".
+ */
+export interface ContactSubmission {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  message: string;
+  locale?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -190,8 +720,32 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: number | Service;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'contact-submissions';
+        value: number | ContactSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -240,6 +794,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  roles?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -260,10 +815,316 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  featuredImage?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        textImage?: T | TextImageBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        stats?: T | StatsBlockSelect<T>;
+        servicesGrid?: T | ServicesGridBlockSelect<T>;
+        projectsGrid?: T | ProjectsGridBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+        cta?: T | CtaBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  image?: T;
+  ctas?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock_select".
+ */
+export interface RichTextBlockSelect<T extends boolean = true> {
+  heading?: T;
+  content?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TextImageBlock_select".
+ */
+export interface TextImageBlockSelect<T extends boolean = true> {
+  heading?: T;
+  content?: T;
+  image?: T;
+  imagePosition?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock_select".
+ */
+export interface GalleryBlockSelect<T extends boolean = true> {
+  images?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StatsBlock_select".
+ */
+export interface StatsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  items?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ServicesGridBlock_select".
+ */
+export interface ServicesGridBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  services?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectsGridBlock_select".
+ */
+export interface ProjectsGridBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  projects?: T;
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsBlock_select".
+ */
+export interface TestimonialsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  items?:
+    | T
+    | {
+        quote?: T;
+        name?: T;
+        role?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBlock_select".
+ */
+export interface CtaBlockSelect<T extends boolean = true> {
+  heading?: T;
+  description?: T;
+  buttonLabel?: T;
+  buttonUrl?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock_select".
+ */
+export interface FaqBlockSelect<T extends boolean = true> {
+  heading?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  title?: T;
+  summary?: T;
+  coverImage?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        textImage?: T | TextImageBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        stats?: T | StatsBlockSelect<T>;
+        servicesGrid?: T | ServicesGridBlockSelect<T>;
+        projectsGrid?: T | ProjectsGridBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+        cta?: T | CtaBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+      };
+  relatedProjects?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  order?: T;
+  featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  summary?: T;
+  coverImage?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        textImage?: T | TextImageBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
+        stats?: T | StatsBlockSelect<T>;
+        servicesGrid?: T | ServicesGridBlockSelect<T>;
+        projectsGrid?: T | ProjectsGridBlockSelect<T>;
+        testimonials?: T | TestimonialsBlockSelect<T>;
+        cta?: T | CtaBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+      };
+  type?: T;
+  location?: T;
+  year?: T;
+  areaM2?: T;
+  status?: T;
+  relatedServices?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  order?: T;
+  featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  content?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  slug?: T;
+  publishedAt?: T;
+  author?: T;
+  categories?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  credit?: T;
   _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -274,6 +1135,19 @@ export interface MediaSelect<T extends boolean = true> {
   filesize?: T;
   width?: T;
   height?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions_select".
+ */
+export interface ContactSubmissionsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  message?: T;
+  locale?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -314,6 +1188,535 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * Shown in the header logo and footer.
+   */
+  companyName: string;
+  /**
+   * Big hero word, usually the company name in capitals (one word fits best).
+   */
+  wordmark: string;
+  legalName?: string | null;
+  tagline?: string | null;
+  footerDescription?: string | null;
+  /**
+   * Text after the © and year.
+   */
+  copyright?: string | null;
+  /**
+   * Optional one-line notice shown above the header. Leave empty to hide.
+   */
+  announcement?: string | null;
+  email: string;
+  careersEmail?: string | null;
+  phone?: string | null;
+  address?:
+    | {
+        line: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Link to your location on a map (no API key needed).
+   */
+  mapUrl?: string | null;
+  social?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  seoImage?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  hero: {
+    /**
+     * Large panel — landscape works best.
+     */
+    leftImage: number | Media;
+    /**
+     * Narrow panel — portrait works best.
+     */
+    rightImage: number | Media;
+    /**
+     * One short, strong sentence.
+     */
+    statement: string;
+    caption: string;
+    ctaLabel: string;
+  };
+  intro: {
+    statement: string;
+    facts?:
+      | {
+          label: string;
+          value: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  work: {
+    heading: string;
+    /**
+     * Choose and order the projects shown (6 recommended). Leave empty to use featured projects.
+     */
+    projects?: (number | Project)[] | null;
+    moreLabel?: string | null;
+  };
+  archive?: {
+    numbers?:
+      | {
+          value: number;
+          label: string;
+          id?: string | null;
+        }[]
+      | null;
+    categoriesLabel?: string | null;
+    categories?:
+      | {
+          name: string;
+          count: number;
+          id?: string | null;
+        }[]
+      | null;
+    stripLabel?: string | null;
+    /**
+     * Photographs for the horizontally scrolling strip. Each gets an automatic "Archive 01" caption.
+     */
+    images?:
+      | {
+          image: number | Media;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  services: {
+    heading: string;
+    /**
+     * Leave empty to list every service.
+     */
+    items?: (number | Service)[] | null;
+  };
+  approach: {
+    title: string;
+    intro?: string | null;
+    image?: (number | null) | Media;
+    caption?: string | null;
+    principles?:
+      | {
+          name: string;
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  studio: {
+    heading: string;
+    people?:
+      | {
+          name: string;
+          role: string;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  journal: {
+    heading: string;
+    moreLabel?: string | null;
+  };
+  contact: {
+    lead: string;
+    ctaLabel: string;
+  };
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-landing".
+ */
+export interface ServicesLanding {
+  id: number;
+  title: string;
+  intro?: string | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects-landing".
+ */
+export interface ProjectsLanding {
+  id: number;
+  title: string;
+  intro?: string | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "journal-landing".
+ */
+export interface JournalLanding {
+  id: number;
+  title: string;
+  intro?: string | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-page".
+ */
+export interface ContactPage {
+  id: number;
+  title: string;
+  intro?: string | null;
+  formIntro?: string | null;
+  hours?: string | null;
+  /**
+   * Search & social sharing. Leave empty to use sensible defaults.
+   */
+  seo?: {
+    /**
+     * Ideal: 50–60 characters.
+     */
+    title?: string | null;
+    /**
+     * Ideal: 120–160 characters.
+     */
+    description?: string | null;
+    /**
+     * Social share image (1200×630 recommended).
+     */
+    image?: (number | null) | Media;
+    noIndex?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  companyName?: T;
+  wordmark?: T;
+  legalName?: T;
+  tagline?: T;
+  footerDescription?: T;
+  copyright?: T;
+  announcement?: T;
+  email?: T;
+  careersEmail?: T;
+  phone?: T;
+  address?:
+    | T
+    | {
+        line?: T;
+        id?: T;
+      };
+  mapUrl?: T;
+  social?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  seoTitle?: T;
+  seoDescription?: T;
+  seoImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        leftImage?: T;
+        rightImage?: T;
+        statement?: T;
+        caption?: T;
+        ctaLabel?: T;
+      };
+  intro?:
+    | T
+    | {
+        statement?: T;
+        facts?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
+      };
+  work?:
+    | T
+    | {
+        heading?: T;
+        projects?: T;
+        moreLabel?: T;
+      };
+  archive?:
+    | T
+    | {
+        numbers?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+        categoriesLabel?: T;
+        categories?:
+          | T
+          | {
+              name?: T;
+              count?: T;
+              id?: T;
+            };
+        stripLabel?: T;
+        images?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
+      };
+  services?:
+    | T
+    | {
+        heading?: T;
+        items?: T;
+      };
+  approach?:
+    | T
+    | {
+        title?: T;
+        intro?: T;
+        image?: T;
+        caption?: T;
+        principles?:
+          | T
+          | {
+              name?: T;
+              text?: T;
+              id?: T;
+            };
+      };
+  studio?:
+    | T
+    | {
+        heading?: T;
+        people?:
+          | T
+          | {
+              name?: T;
+              role?: T;
+              text?: T;
+              id?: T;
+            };
+      };
+  journal?:
+    | T
+    | {
+        heading?: T;
+        moreLabel?: T;
+      };
+  contact?:
+    | T
+    | {
+        lead?: T;
+        ctaLabel?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-landing_select".
+ */
+export interface ServicesLandingSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects-landing_select".
+ */
+export interface ProjectsLandingSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "journal-landing_select".
+ */
+export interface JournalLandingSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-page_select".
+ */
+export interface ContactPageSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  formIntro?: T;
+  hours?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
