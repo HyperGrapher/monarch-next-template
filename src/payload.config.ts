@@ -66,7 +66,7 @@ export default buildConfig({
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || (() => { throw new Error('PAYLOAD_SECRET is not set') })()
+  secret: process.env.PAYLOAD_SECRET || (() => { throw new Error('PAYLOAD_SECRET is not set') })(),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
