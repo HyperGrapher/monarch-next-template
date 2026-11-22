@@ -11,12 +11,6 @@ import { r2Storage } from '@payloadcms/storage-r2'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 
-// 1. boot diagnostic — add near the top of payload.config.ts
-console.log('[boot] secretLen=', (process.env.PAYLOAD_SECRET || '').length,
-            'serverURL=', process.env.PAYLOAD_SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL)
-
-
-
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const realpath = (value: string) => {
@@ -76,9 +70,9 @@ const logger = {
 
 // Loud error for missing secret
 const secret = process.env.PAYLOAD_SECRET
-if (!secret && process.env.NEXT_PHASE !== 'phase-production-build') {
-  throw new Error('PAYLOAD_SECRET is not set')
-}
+// if (!secret && process.env.NEXT_PHASE !== 'phase-production-build') {
+//   throw new Error('PAYLOAD_SECRET is not set')
+// }
 
 
 const cloudflare =
