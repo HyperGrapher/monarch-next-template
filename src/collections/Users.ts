@@ -6,6 +6,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   auth: {
+      // @ts-expect-error present at runtime, missing from IncomingAuthType in this version
     passwordHashIterations: 100000,
   },
   fields: [],
