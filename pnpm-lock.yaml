@@ -72,6 +72,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.7
+      '@neon/config':
+        specifier: ^1.14.6
+        version: 1.14.6
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0
@@ -1294,6 +1297,14 @@ packages:
       monaco-editor: '>= 0.25.0 < 1'
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  '@neon/config@1.14.6':
+    resolution: {integrity: sha512-w04pCgGoOoQb/306Zf2kg0YlKRT+iWfLhM6WE7+iKflxfrrXtNVgkOghMlmiXscfBZqKFfF6mrIv0fpsQOkAMQ==}
+    engines: {node: '>=20.19.0'}
+
+  '@neon/sdk@7.15.0':
+    resolution: {integrity: sha512-+5gi8Kt8Fc01U5Ssz4aLTnYIxwCebviV0e6J+YpwIhz4hCAw2m21eb/tO5zPMjz3bmUn8G1tezhKzsSfr3CzeA==}
+    engines: {node: '>=20.19.0'}
 
   '@next/env@15.5.29':
     resolution: {integrity: sha512-9SrTiTsgORa+KfhlXXAGC1eSs847E+d2MQTPUX+n7R5XA8g/B6ZitfL6GoYHNMLwG3Hzs1wjDH0/ME5WrGMqBQ==}
@@ -5569,6 +5580,14 @@ snapshots:
       monaco-editor: 0.57.0
       react: 19.2.9
       react-dom: 19.2.9(react@19.2.9)
+
+  '@neon/config@1.14.6':
+    dependencies:
+      '@neon/sdk': 7.15.0
+      jiti: 2.7.0
+      zod: 4.6.7
+
+  '@neon/sdk@7.15.0': {}
 
   '@next/env@15.5.29': {}
 

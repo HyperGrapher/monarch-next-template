@@ -8,6 +8,23 @@
 
 **NOT verified:** anything on real Vercel/Neon/Blob — build on Vercel, Blob uploads (admin and seed), admin CPU/latency, Neon cold starts, function region. `generate:importmap` was run with a dummy Blob token so the import map includes the Blob client handler.
 
+**Neon CLI (run locally — not possible from the cloud sandbox):** `neon init` was already run here (project `restless-thunder-20785466`, org `org-dark-bird-03076300`, branch `production`, service `postgres`); it wrote `neon.ts` and added `@neon/config` (dev dependency) and `.neon` to `.gitignore`. The link was written **without contacting Neon**, so on your PC:
+```bash
+git checkout vercel && git pull && pnpm install --ignore-workspace
+npm i -g neon@latest          # or: npx neon@latest …
+neon login                    # finishes in the browser
+neon env pull                 # writes DATABASE_URL (and friends) to .env.local / .env
+neon config plan && neon deploy   # only provisions what neon.ts declares (nothing new: Postgres already exists)
+```
+Check that `DATABASE_URL` is the **pooled** string (host contains `-pooler`) and ends with `sslmode=require`; add `PAYLOAD_SECRET` (`openssl rand -hex 32`). Then, still on your PC:
+```bash
+pnpm migrate                  # applies src/migrations/*_initial to Neon
+pnpm build                    # must pass (it prerenders from the DB)
+pnpm start                    # test /tr, /en, /admin (create the first admin), edit → page refreshes
+pnpm seed                     # OPTIONAL, wipes content collections; without BLOB_READ_WRITE_TOKEN images go to ./media (local only!)
+```
+For real media, create the public Blob store in Vercel first, then `vercel env pull` (or copy the token) so `pnpm seed`/uploads go to Blob. Do **not** seed production with local-disk images.
+
 **Steps to go live:** see README → "Deploying to Vercel + Neon". Content from the old D1 is not migrated (it was seed data only).
 
 ---
