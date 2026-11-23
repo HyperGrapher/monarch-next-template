@@ -23,9 +23,9 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 
 ## NOT done / not verified
 1. **Admin on Vercel**: first-admin creation worked (user did it); admin edit → public page refresh, media upload, preview mode, and the contact form have not been verified on the live site by the agent (no admin login). Admin latency / Neon cold starts / function region not measured.
-2. **Phase 6 single-language branch**: not created. Central files `src/config/locales.ts` (+ `localePath`), `brand.ts`; the `[locale]` segment, `next.config.ts` root redirect, `Header` switcher and dictionary selection need a small documented diff.
+2. **Single-language edition**: lives on the `single-language` branch (own README section, own migrations, clean URLs via `next.config.ts` rewrites). It is a separate product line: never run its migrations on this bilingual database. Keep it in sync by merging `main` into it.
 3. Not built: admin Live Preview iframe (only Draft Mode preview), translation-completeness indicator, Payload admin Turkish UI translation, email delivery for the contact form, WebSite/BreadcrumbList/Organization JSON-LD, rate limiting beyond honeypot/min-time, per-locale slugs (shared by design).
-4. `tests/` (vitest/Playwright) still target the original Payload starter and were never updated or run.
+4. Tests: `pnpm test:int` (vitest, Local API, real access rules) and `pnpm test:e2e` (Playwright against a production build) exist and pass; they need `TEST_DATABASE_URL` (throwaway DB; they refuse to run if it equals `DATABASE_URL`). Not run in CI (none configured). Contact-form email, rate limiting and a11y/perf are untested.
 5. Performance budgets (LCP, JS size) and accessibility audit (contrast, 200% zoom, screen reader) not measured; reduced motion is ported but only reviewed.
 6. Old `?type=` / `?category=` / `?page=` query URLs no longer filter (replaced by path segments).
 7. Vercel Hobby is non-commercial only; a client site needs Pro.
@@ -41,8 +41,13 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * Next 16: `params`/`searchParams` are Promises; route types live in `src/lib/route.ts`. Read `node_modules/next/dist/docs/` before changing Next conventions (see `AGENTS.md`).
 * `neon.ts` / `@neon/config` come from `neon init`; the app itself only uses `DATABASE_URL`.
 
+## Gotchas (added with the tests / single-language work)
+* Next matches dynamic routes **before** `fallback` rewrites (relevant to the single-language edition's clean-URL rewrite: it must be `afterFiles`, excluding `/admin` and `/api`).
+* `payload.db.migrate()` cannot load the migration `.ts` files under vitest (type-only named imports); tests shell out to the `payload` CLI. `payload migrate:fresh --force-accept` still prompts, so the test reset uses `dropDatabase` + `migrate`.
+* Playwright's `request` context keeps cookies: after `first-register` it is signed in. Use fresh contexts for anonymous checks.
+* `generate:types` / `migrate:create` without `BLOB_READ_WRITE_TOKEN` drop the Blob `_objectKey` column/type. Use a dummy `vercel_blob_rw_dummy_x` token when generating, and never commit a `payload-types.ts` that lost `_objectKey`.
+
 ## Suggested next steps
-1. Verify on the live site: admin edit → refresh, upload an image, Preview, contact form (then delete the test submission).
-2. Replace `tests/` with tests for locales, preview auth, contact access, roles.
-3. Create the `single-language` branch from this state and document the diff in the README.
-4. Live preview iframe, completeness indicator, extra structured data, email provider if wanted.
+1. Add CI (`test:int` + `test:e2e` against a Neon test branch).
+2. Live preview iframe, completeness indicator, extra structured data, email provider if wanted.
+3. Deploy the single-language edition (own Neon DB + Vercel project) when a client needs it.
