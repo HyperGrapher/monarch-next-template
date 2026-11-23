@@ -15,7 +15,7 @@ export function ProjectCard({ p, i, locale, className = '' }: { p: Project; i: n
     [t.facts.year, String(p.year ?? '')],
     [t.facts.area, formatArea(p.areaM2, locale)],
   ].filter(([, v]) => v) as [string, string][]
-  const inConstruction = p.status === 'inConstruction'
+  const inConstruction = p.buildStatus === 'inConstruction'
   return (
     <article className={`${className} group`}>
       <Link href={localePath(locale, `/projects/${p.slug}`)} className="block" aria-label={p.title}>

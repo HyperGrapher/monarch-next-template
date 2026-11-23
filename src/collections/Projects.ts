@@ -56,7 +56,7 @@ export const Projects: CollectionConfig = {
             { name: 'year', type: 'number', required: true, min: 1900, max: 2100 },
             { name: 'areaM2', type: 'number', label: 'Area (m²)', min: 0 },
             {
-              name: 'status',
+              name: 'buildStatus',
               type: 'select',
               required: true,
               defaultValue: 'built',

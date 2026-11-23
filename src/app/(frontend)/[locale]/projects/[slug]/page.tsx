@@ -42,7 +42,7 @@ export default async function ProjectPage({ params }: LocaleSlugParams) {
     [t.facts.place, p.location ?? ''],
     [t.facts.year, String(p.year ?? '')],
     [t.facts.area, formatArea(p.areaM2, locale)],
-    [t.facts.status, p.status === 'inConstruction' ? t.status.inConstruction : t.status.built],
+    [t.facts.status, p.buildStatus === 'inConstruction' ? t.status.inConstruction : t.status.built],
   ].filter(([, v]) => v) as [string, string][]
   return (
     <>

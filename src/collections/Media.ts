@@ -8,7 +8,7 @@ export const Media: CollectionConfig = {
   admin: { useAsTitle: 'filename', group: 'Content', defaultColumns: ['filename', 'alt', 'updatedAt'] },
   access: { read: () => true, create: staffOnly, update: staffOnly, delete: staffOnly },
   hooks: {
-    // Workers have no sharp, so Payload cannot read dimensions. Read them from the file header
+    // Without sharp Payload cannot read dimensions. Read them from the file header
     // so the frontend can reserve aspect ratio (no layout shift).
     beforeChange: [
       ({ data, req }) => {
@@ -32,7 +32,7 @@ export const Media: CollectionConfig = {
   ],
   upload: {
     mimeTypes: ['image/*'],
-    // Not supported on Workers (no sharp). Optimise images BEFORE uploading (WebP/AVIF, ≤ 2400px).
+    // Resizing/cropping is off. Optimise images BEFORE uploading (WebP/AVIF, ≤ 2400px).
     crop: false,
     focalPoint: false,
   },

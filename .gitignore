@@ -53,4 +53,4 @@ node_modules/
 .open-next
 .wrangler
 
-.dev.vars
+.dev.vars/media

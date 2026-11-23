@@ -1,3 +1,17 @@
+# Handoff — Vercel + Neon branch (`vercel`)
+
+**Why:** On the Cloudflare Free plan the Payload admin (and uncached routes) hit Error 1102 (10 ms CPU), even after ISR caching. This branch moves the stack to Vercel + Neon Postgres + Vercel Blob. The Cloudflare version is on `main` before this merge (commit `8c75093`).
+
+**Changed:** `@payloadcms/db-postgres` (Neon, pooled URL) · `@payloadcms/storage-vercel-blob` (local `./media` fallback without a token) · wrangler/OpenNext files and the D1 migrations removed · fresh Postgres migration `*_initial` · `vercel-build` = `migrate` + `build` · env-driven `serverURL`, debug logger removed · `projects.status` renamed `buildStatus` (it collided with Payload's `_status` Postgres enum; SQLite never enforced it) · media URLs left untouched when they are Blob CDN URLs.
+
+**Verified locally (Postgres 16):** migrate, seed (11 images), `next build` (all public routes static), `next start`, edit through the API → cached page refreshes, preview/admin/media routes respond.
+
+**NOT verified:** anything on real Vercel/Neon/Blob — build on Vercel, Blob uploads (admin and seed), admin CPU/latency, Neon cold starts, function region. `generate:importmap` was run with a dummy Blob token so the import map includes the Blob client handler.
+
+**Steps to go live:** see README → "Deploying to Vercel + Neon". Content from the old D1 is not migrated (it was seed data only).
+
+---
+
 # Handoff — Monarch Architects starter
 
 Branch: `claude/eloquent-lovelace-eykpo5` (not merged to `main`, no PR opened). Source brief: [`docs/monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo (`master`; `docs/monarch-website-brief.md`, `src/`).

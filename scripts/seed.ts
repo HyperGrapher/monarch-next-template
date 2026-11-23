@@ -1,7 +1,6 @@
 /**
  * Seeds / RESETS the fictional bilingual demo content.
- *   WRANGLER_CONFIG=wrangler.local.jsonc pnpm seed        (local D1/R2, safe)
- *   pnpm seed                                            (uses wrangler.jsonc → REMOTE D1/R2, needs CLOUDFLARE_API_TOKEN)
+ *   pnpm seed     (uses DATABASE_URL, and BLOB_READ_WRITE_TOKEN if set, else ./media) — point it at the DB you mean!
  * WARNING: deletes all content collections (not users) before re-creating them.
  */
 import path from 'path'
@@ -65,7 +64,7 @@ async function main() {
   for (let i = 0; i < projCount; i++) {
     projIds.push(await upsert('projects', (l) => {
       const p = c.projects(l, ids)[i]
-      return { slug: p.slug, type: p.type, year: p.year, areaM2: p.areaM2, status: p.status, order: p.order, featured: p.featured, coverImage: p.cover, gallery: p.gallery, title: p.title, location: p.location, summary: p.summary, layout: p.layout, relatedServices: [svcIds[i % svcIds.length]] }
+      return { slug: p.slug, type: p.type, year: p.year, areaM2: p.areaM2, buildStatus: p.buildStatus, order: p.order, featured: p.featured, coverImage: p.cover, gallery: p.gallery, title: p.title, location: p.location, summary: p.summary, layout: p.layout, relatedServices: [svcIds[i % svcIds.length]] }
     }))
   }
   // services ↔ projects (related)

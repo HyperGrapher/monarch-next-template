@@ -240,7 +240,6 @@ export interface Media {
    * Photographer / source / licence note.
    */
   credit?: string | null;
-  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -525,7 +524,7 @@ export interface Project {
   location: string;
   year: number;
   areaM2?: number | null;
-  status: 'built' | 'inConstruction';
+  buildStatus: 'built' | 'inConstruction';
   relatedServices?: (number | Service)[] | null;
   /**
    * Search & social sharing. Leave empty to use sensible defaults.
@@ -1064,7 +1063,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   location?: T;
   year?: T;
   areaM2?: T;
-  status?: T;
+  buildStatus?: T;
   relatedServices?: T;
   seo?:
     | T
@@ -1125,7 +1124,6 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   credit?: T;
-  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
