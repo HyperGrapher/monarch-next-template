@@ -8,13 +8,17 @@ test.describe.configure({ mode: 'serial' })
 test.describe('admin and cache refresh', () => {
   let token = ''
 
-  test('the first registration works and is the only one', async ({ request }) => {
-    const first = await request.post('/api/users/first-register', { data: admin })
-    expect(first.status()).toBe(200)
-    const second = await request.post('/api/users/first-register', { data: { email: 'second@example.com', password: 'E2e-Password-123!' } })
-    expect(second.status()).not.toBe(200)
-    const plain = await request.post('/api/users', { data: { email: 'third@example.com', password: 'E2e-Password-123!' } })
-    expect([401, 403]).toContain(plain.status())
+  test('the first registration works and is the only one', async ({ playwright, baseURL }) => {
+    // Fresh, cookie-less contexts: a request context keeps the session cookie, which would make later calls "signed in".
+    const fresh = () => playwright.request.newContext({ baseURL })
+    const a = await fresh()
+    expect((await a.post('/api/users/first-register', { data: admin })).status()).toBe(200)
+    const b = await fresh()
+    expect((await b.post('/api/users/first-register', { data: { email: 'second@example.com', password: 'E2e-Password-123!' } })).status()).not.toBe(200)
+    const c = await fresh()
+    expect([401, 403]).toContain((await c.post('/api/users', { data: { email: 'third@example.com', password: 'E2e-Password-123!' } })).status())
+    expect([401, 403]).toContain((await c.get('/api/users')).status())
+    await Promise.all([a.dispose(), b.dispose(), c.dispose()])
   })
 
   test('admin can sign in through the UI and sees the dashboard', async ({ page }) => {

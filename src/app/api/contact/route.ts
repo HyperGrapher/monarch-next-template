@@ -13,6 +13,7 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ ok: false }, { status: 400 })
   }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return Response.json({ ok: false }, { status: 400 })
   const locale = isLocale(str(body.locale, 5)) ? (str(body.locale, 5) as 'tr' | 'en') : 'tr'
   // Abuse protection: honeypot + "too fast" timing trap. Bots get a silent success.
   const elapsed = typeof body.elapsed === 'number' ? body.elapsed : 0

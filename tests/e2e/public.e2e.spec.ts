@@ -114,8 +114,9 @@ test.describe('contact form', () => {
     expect((await request.post('/api/contact', { data: body({ website: 'http://spam.example' }) })).status()).toBe(200)
     expect((await request.post('/api/contact', { data: body({ elapsed: 100 }) })).status()).toBe(200)
   })
-  test('rejects malformed JSON', async ({ request }) => {
-    expect((await request.post('/api/contact', { data: 'not json', headers: { 'content-type': 'application/json' } })).status()).toBe(400)
+  test('rejects malformed or non-object JSON', async ({ request }) => {
+    const post = (raw: string) => request.post('/api/contact', { data: Buffer.from(raw), headers: { 'content-type': 'application/json' } })
+    for (const raw of ['not json', 'null', '"text"', '[1,2]']) expect((await post(raw)).status(), raw).toBe(400)
   })
   test('stores a valid message', async ({ request }) => {
     const res = await request.post('/api/contact', { data: body() })
