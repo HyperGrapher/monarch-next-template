@@ -149,6 +149,9 @@ function loadImage(src: string) {
 		const i = new Image();
 		i.onload = () => res(i);
 		i.onerror = rej;
+		// Media is served from the Blob CDN (another origin). Without CORS the image
+		// taints the WebGL texture and texImage2D throws a SecurityError.
+		i.crossOrigin = "anonymous";
 		i.src = src;
 	});
 }
@@ -235,7 +238,8 @@ export function initHero(r: HeroRefs) {
 		sizes.r = [rr.naturalWidth, rr.naturalHeight];
 		ready = true;
 		layout();
-	}).catch(() => {
+	}).catch((err) => {
+		console.warn("[hero] WebGL setup failed, showing plain photos:", err);
 		// An image failed to load: never leave the loader up forever.
 		r.onFallback?.();
 		r.onReady?.();
