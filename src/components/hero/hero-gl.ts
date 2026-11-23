@@ -235,7 +235,19 @@ export function initHero(r: HeroRefs) {
 		sizes.r = [rr.naturalWidth, rr.naturalHeight];
 		ready = true;
 		layout();
+	}).catch(() => {
+		// An image failed to load: never leave the loader up forever.
+		r.onFallback?.();
+		r.onReady?.();
 	});
+	// Safety net: release the loader even if loading stalls.
+	setTimeout(() => {
+		if (!notified) {
+			notified = true;
+			r.onFallback?.();
+			r.onReady?.();
+		}
+	}, 8000);
 
 	const rects = { l: [0, 0, 0, 0], r: [0, 0, 0, 0] };
 	let defaultSplit = 0;
