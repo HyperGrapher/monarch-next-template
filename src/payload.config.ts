@@ -8,6 +8,7 @@ import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
+import { revalidateAfterChange, revalidateAfterDelete } from './lib/revalidate'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -102,8 +103,16 @@ export default buildConfig({
   auth: {
     passwordHashIterations: 100000,
   },
-  collections: [Users, Pages, Services, Projects, Posts, Categories, Media, ContactSubmissions],
-  globals: [SiteSettings, HomePage, ServicesLanding, ProjectsLanding, JournalLanding, ContactPage],
+  // Public pages are ISR-cached: any content change purges them (see lib/revalidate.ts).
+  collections: [Users, Pages, Services, Projects, Posts, Categories, Media, ContactSubmissions].map((c) =>
+    ['users', 'contact-submissions'].includes(c.slug)
+      ? c
+      : { ...c, hooks: { ...c.hooks, afterChange: [...(c.hooks?.afterChange ?? []), revalidateAfterChange], afterDelete: [...(c.hooks?.afterDelete ?? []), revalidateAfterDelete] } },
+  ),
+  globals: [SiteSettings, HomePage, ServicesLanding, ProjectsLanding, JournalLanding, ContactPage].map((g) => ({
+    ...g,
+    hooks: { ...g.hooks, afterChange: [...(g.hooks?.afterChange ?? []), revalidateAfterChange] },
+  })),
   localization: {
     locales: locales.map((code) => ({ code, label: localeLabels[code] })),
     defaultLocale,

@@ -3,13 +3,18 @@ import { notFound } from 'next/navigation'
 import { RenderBlocks } from '../../../../components/blocks/RenderBlocks'
 import { Photo } from '../../../../components/ui/Photo'
 import { PageHeader } from '../../../../components/ui/PageHeader'
-import { isLocale } from '../../../../config/locales'
+import { isLocale, locales } from '../../../../config/locales'
 import { img } from '../../../../lib/media'
-import { getPageBySlug, getSettings } from '../../../../lib/queries'
+import { getPageBySlug, getSettings, getSlugs } from '../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../lib/route'
 import { buildMetadata } from '../../../../lib/seo'
 
 // Generic CMS pages (About and any page an editor creates in Pages).
+export async function generateStaticParams(): Promise<{ locale: string; slug: string }[]> {
+  const perLocale = await Promise.all(locales.map(async (locale) => (await getSlugs('pages', locale)).map((slug) => ({ locale, slug }))))
+  return perLocale.flat()
+}
+
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}

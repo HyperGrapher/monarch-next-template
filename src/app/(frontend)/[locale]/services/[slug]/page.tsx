@@ -5,12 +5,17 @@ import { RenderBlocks } from '../../../../../components/blocks/RenderBlocks'
 import { ProjectCard } from '../../../../../components/home/ProjectCard'
 import { Photo } from '../../../../../components/ui/Photo'
 import { PageHeader } from '../../../../../components/ui/PageHeader'
-import { isLocale, localePath } from '../../../../../config/locales'
+import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getService, getSettings } from '../../../../../lib/queries'
+import { getService, getSettings, getSlugs } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { buildMetadata } from '../../../../../lib/seo'
+
+export async function generateStaticParams(): Promise<{ locale: string; slug: string }[]> {
+  const perLocale = await Promise.all(locales.map(async (locale) => (await getSlugs('services', locale)).map((slug) => ({ locale, slug }))))
+  return perLocale.flat()
+}
 
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params

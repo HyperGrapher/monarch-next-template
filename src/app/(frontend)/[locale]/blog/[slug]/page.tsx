@@ -3,13 +3,18 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Photo } from '../../../../../components/ui/Photo'
 import { RichText } from '../../../../../components/ui/RichText'
-import { isLocale, localePath } from '../../../../../config/locales'
+import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getPost, getRelatedPosts, getSettings } from '../../../../../lib/queries'
+import { getPost, getRelatedPosts, getSettings, getSlugs } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { buildMetadata, siteUrl } from '../../../../../lib/seo'
 import { formatDate, readingMinutes } from '../../../../../lib/text'
+
+export async function generateStaticParams(): Promise<{ locale: string; slug: string }[]> {
+  const perLocale = await Promise.all(locales.map(async (locale) => (await getSlugs('posts', locale)).map((slug) => ({ locale, slug }))))
+  return perLocale.flat()
+}
 
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params

@@ -7,13 +7,16 @@ import { PreviewBanner } from '../../../components/layout/PreviewBanner'
 import { ScrollTop } from '../../../components/layout/ScrollTop'
 import { Shell } from '../../../components/layout/Shell'
 import { brandConfig } from '../../../config/brand'
-import { isLocale, localePath } from '../../../config/locales'
+import { isLocale, localePath, locales } from '../../../config/locales'
 import { getDictionary } from '../../../lib/i18n/dictionary'
 import type { LocaleLayoutProps } from '../../../lib/route'
 import { buildMetadata, siteUrl } from '../../../lib/seo'
 import { getSettings } from '../../../lib/queries'
 
-export const dynamic = 'force-dynamic' // always-fresh CMS content; see README "Caching"
+// Statically cached (ISR in R2). CMS edits purge it via revalidatePath (src/lib/revalidate.ts);
+// the daily revalidate is only a safety net.
+export const revalidate = 86400
+export const generateStaticParams = () => locales.map((locale) => ({ locale }))
 
 export async function generateMetadata({ params }: LocaleLayoutProps): Promise<Metadata> {
   const { locale } = await params

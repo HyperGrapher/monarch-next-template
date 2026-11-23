@@ -56,6 +56,8 @@
       "bucket_name": "monarch-next","preview_bucket_name": "monarch-next",
       "remote": true,
     },
+    // ISR / data cache. Same bucket, objects live under the "incremental-cache/" prefix.
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "monarch-next", "preview_bucket_name": "monarch-next", "remote": true },
     // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
     // {
     //   "binding": "NEXT_INC_CACHE_R2_BUCKET",

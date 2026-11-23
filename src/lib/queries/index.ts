@@ -78,3 +78,10 @@ export async function getCategories({ locale }: Ctx): Promise<Category[]> {
   const { docs } = await payload.find({ collection: 'categories', locale, fallbackLocale: false, limit: 50, pagination: false, sort: 'slug' })
   return docs.filter((c) => !!c.name)
 }
+
+/** Slugs of published, translated docs — used by generateStaticParams so detail pages are prerendered/ISR-cached. */
+export async function getSlugs(collection: 'pages' | 'services' | 'projects' | 'posts', locale: Locale): Promise<string[]> {
+  const payload = await getClient()
+  const { docs } = await payload.find({ collection, locale, fallbackLocale: false, limit: 500, pagination: false, depth: 0, select: { slug: true, title: true } as any })
+  return (docs as { slug?: string | null; title?: string | null }[]).filter((d) => d.slug && d.title).map((d) => d.slug as string)
+}

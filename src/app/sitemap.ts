@@ -3,7 +3,7 @@ import { isMultilingual, localePath, locales } from '../config/locales'
 import { getClient } from '../lib/payload'
 import { siteUrl } from '../lib/seo'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 // Published content only (draft: false + public access rules).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
