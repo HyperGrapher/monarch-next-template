@@ -80,10 +80,10 @@ const logger = {
 
 
 // Loud error for missing secret
-const secret = process.env.PAYLOAD_SECRET
-// if (!secret && process.env.NEXT_PHASE !== 'phase-production-build') {
-//   throw new Error('PAYLOAD_SECRET is not set')
-// }
+// Pages are prerendered during `next build`, which initialises Payload. The real secret is a
+// runtime Worker secret and is not available to the build, so use a throwaway value there only
+// (nothing signed at build time is ever shipped).
+const secret = process.env.PAYLOAD_SECRET || (process.env.NEXT_PHASE === 'phase-production-build' ? 'build-time-placeholder' : undefined)
 
 
 const cloudflare =
