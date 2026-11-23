@@ -1,5 +1,5 @@
 import { getClient } from '../../../lib/payload'
-import { isLocale } from '../../../config/locales'
+import { defaultLocale, isLocale } from '../../../config/locales'
 import { getDictionary } from '../../../lib/i18n/dictionary'
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     return Response.json({ ok: false }, { status: 400 })
   }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return Response.json({ ok: false }, { status: 400 })
-  const locale = isLocale(str(body.locale, 5)) ? (str(body.locale, 5) as 'tr' | 'en') : 'tr'
+  const requested = str(body.locale, 5)
+  const locale = isLocale(requested) ? requested : defaultLocale
   // Abuse protection: honeypot + "too fast" timing trap. Bots get a silent success.
   const elapsed = typeof body.elapsed === 'number' ? body.elapsed : 0
   if (str(body.website, 200) || elapsed < 1500) return Response.json({ ok: true })

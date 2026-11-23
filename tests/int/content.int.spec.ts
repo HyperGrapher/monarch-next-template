@@ -1,20 +1,21 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { getPayload, type Payload } from 'payload'
 import config from '../../src/payload.config'
+import { defaultLocale, type Locale } from '../../src/config/locales'
 import { getPageBySlug, getSlugs } from '../../src/lib/queries'
 import { revalidateAfterChange } from '../../src/lib/revalidate'
-import { isMultilingual } from '../helpers/edition'
+import { isMultilingual, secondLocale } from '../helpers/edition'
 
 let payload: Payload
 
-const page = (slug: string, title: string, status: 'draft' | 'published', locale: 'tr' | 'en' = 'tr') =>
+const page = (slug: string, title: string, status: 'draft' | 'published', locale: Locale = defaultLocale) =>
   payload.create({ collection: 'pages', locale, draft: status === 'draft', data: { slug, title, _status: status } as any, overrideAccess: true })
 
 beforeAll(async () => {
   payload = await getPayload({ config: await config })
   await page('only-turkish', 'Sadece Türkçe', 'published')
   const both = await page('both', 'Her ikisi', 'published')
-  if (isMultilingual) await payload.update({ collection: 'pages', id: both.id, locale: 'en', data: { title: 'Both', _status: 'published' } as any, draft: false, overrideAccess: true })
+  if (isMultilingual) await payload.update({ collection: 'pages', id: both.id, locale: secondLocale, data: { title: 'Both', _status: 'published' } as any, draft: false, overrideAccess: true })
   await page('secret-draft', 'Taslak', 'draft')
 })
 
@@ -32,15 +33,15 @@ describe('drafts', () => {
 
 describe.skipIf(!isMultilingual)('translations (no silent fallback)', () => {
   it('serves a translated page in its own language', async () => {
-    expect((await getPageBySlug('both', { locale: 'en' }))?.title).toBe('Both')
+    expect((await getPageBySlug('both', { locale: secondLocale }))?.title).toBe('Both')
     expect((await getPageBySlug('both', { locale: 'tr' }))?.title).toBe('Her ikisi')
   })
   it('hides a page that has no translation instead of showing Turkish', async () => {
     expect((await getPageBySlug('only-turkish', { locale: 'tr' }))?.title).toBe('Sadece Türkçe')
-    expect(await getPageBySlug('only-turkish', { locale: 'en' })).toBeNull()
+    expect(await getPageBySlug('only-turkish', { locale: secondLocale })).toBeNull()
   })
   it('only lists translated slugs per locale (used for static params)', async () => {
-    expect(await getSlugs('pages', 'en')).toEqual(['both'])
+    expect(await getSlugs('pages', secondLocale)).toEqual(['both'])
     expect((await getSlugs('pages', 'tr')).sort()).toEqual(['both', 'only-turkish'])
   })
 })

@@ -4,7 +4,7 @@ import { getDictionary } from '../../src/lib/i18n/dictionary'
 import { localUrl } from '../../src/lib/media'
 import { absoluteUrl } from '../../src/lib/seo'
 import { projectTypes } from '../../src/collections/Projects'
-import { isMultilingual } from '../helpers/edition'
+import { isMultilingual, secondLocale } from '../helpers/edition'
 
 const shape = (v: unknown): unknown =>
   typeof v === 'function' ? 'fn' : Array.isArray(v) ? v.map(shape) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).sort().map(([k, x]) => [k, shape(x)])) : typeof v
@@ -18,8 +18,8 @@ describe('locales', () => {
   })
   it.skipIf(!isMultilingual)('builds prefixed paths', () => {
     expect(localePath('tr')).toBe('/tr')
-    expect(localePath('en', '/projects')).toBe('/en/projects')
-    expect(localePath('en', 'blog/x')).toBe('/en/blog/x')
+    expect(localePath(secondLocale, '/projects')).toBe('/en/projects')
+    expect(localePath(secondLocale, 'blog/x')).toBe('/en/blog/x')
   })
   it.skipIf(isMultilingual)('builds unprefixed paths (single-language edition)', () => {
     expect(localePath(defaultLocale)).toBe('/')
