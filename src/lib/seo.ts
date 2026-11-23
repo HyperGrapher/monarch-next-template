@@ -5,6 +5,9 @@ import { localUrl } from './media'
 
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/$/, '')
 
+/** Absolute URL for a path or an already-absolute URL (Blob CDN images are absolute). */
+export const absoluteUrl = (u: string) => (/^https?:\/\//.test(u) ? u : `${siteUrl()}${u}`)
+
 type Seo = { title?: string | null; description?: string | null; image?: number | Media | null; noIndex?: boolean | null } | null | undefined
 
 export function buildMetadata(opts: {
@@ -21,7 +24,7 @@ export function buildMetadata(opts: {
   const title = seo?.title || opts.title || opts.siteName || undefined
   const description = seo?.description || opts.description || undefined
   const imageDoc = seo?.image ?? opts.fallbackImage
-  const image = imageDoc && typeof imageDoc !== 'number' && imageDoc.url ? [{ url: `${siteUrl()}${localUrl(imageDoc.url)}`, width: imageDoc.width ?? undefined, height: imageDoc.height ?? undefined }] : undefined
+  const image = imageDoc && typeof imageDoc !== 'number' && imageDoc.url ? [{ url: absoluteUrl(localUrl(imageDoc.url)), width: imageDoc.width ?? undefined, height: imageDoc.height ?? undefined }] : undefined
   const url = `${siteUrl()}${localePath(locale, path)}`
   return {
     title,

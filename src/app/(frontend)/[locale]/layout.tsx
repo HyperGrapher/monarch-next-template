@@ -13,7 +13,7 @@ import type { LocaleLayoutProps } from '../../../lib/route'
 import { buildMetadata, siteUrl } from '../../../lib/seo'
 import { getSettings } from '../../../lib/queries'
 
-// Statically cached (ISR in R2). CMS edits purge it via revalidatePath (src/lib/revalidate.ts);
+// Statically cached (ISR). CMS edits purge it via revalidatePath (src/lib/revalidate.ts);
 // the daily revalidate is only a safety net.
 export const revalidate = 86400
 export const generateStaticParams = () => locales.map((locale) => ({ locale }))

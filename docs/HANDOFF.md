@@ -1,75 +1,48 @@
-# Handoff — Vercel + Neon branch (`vercel`)
-
-**Why:** On the Cloudflare Free plan the Payload admin (and uncached routes) hit Error 1102 (10 ms CPU), even after ISR caching. This branch moves the stack to Vercel + Neon Postgres + Vercel Blob. The Cloudflare version is on `main` before this merge (commit `8c75093`).
-
-**Changed:** `@payloadcms/db-postgres` (Neon, pooled URL) · `@payloadcms/storage-vercel-blob` (local `./media` fallback without a token) · wrangler/OpenNext files and the D1 migrations removed · fresh Postgres migration `*_initial` · `vercel-build` = `migrate` + `build` · env-driven `serverURL`, debug logger removed · `projects.status` renamed `buildStatus` (it collided with Payload's `_status` Postgres enum; SQLite never enforced it) · media URLs left untouched when they are Blob CDN URLs.
-
-**Verified locally (Postgres 16):** migrate, seed (11 images), `next build` (all public routes static), `next start`, edit through the API → cached page refreshes, preview/admin/media routes respond.
-
-**NOT verified:** anything on real Vercel/Neon/Blob — build on Vercel, Blob uploads (admin and seed), admin CPU/latency, Neon cold starts, function region. `generate:importmap` was run with a dummy Blob token so the import map includes the Blob client handler.
-
-**Neon CLI (run locally — not possible from the cloud sandbox):** `neon init` was already run here (project `restless-thunder-20785466`, org `org-dark-bird-03076300`, branch `production`, service `postgres`); it wrote `neon.ts` and added `@neon/config` (dev dependency) and `.neon` to `.gitignore`. The link was written **without contacting Neon**, so on your PC:
-```bash
-git checkout vercel && git pull && pnpm install --ignore-workspace
-npm i -g neon@latest          # or: npx neon@latest …
-neon login                    # finishes in the browser
-neon env pull                 # writes DATABASE_URL (and friends) to .env.local / .env
-neon config plan && neon deploy   # only provisions what neon.ts declares (nothing new: Postgres already exists)
-```
-Check that `DATABASE_URL` is the **pooled** string (host contains `-pooler`) and ends with `sslmode=require`; add `PAYLOAD_SECRET` (`openssl rand -hex 32`). Then, still on your PC:
-```bash
-pnpm migrate                  # applies src/migrations/*_initial to Neon
-pnpm build                    # must pass (it prerenders from the DB)
-pnpm start                    # test /tr, /en, /admin (create the first admin), edit → page refreshes
-pnpm seed                     # OPTIONAL, wipes content collections; without BLOB_READ_WRITE_TOKEN images go to ./media (local only!)
-```
-For real media, create the public Blob store in Vercel first, then `vercel env pull` (or copy the token) so `pnpm seed`/uploads go to Blob. Do **not** seed production with local-disk images.
-
-**Steps to go live:** see README → "Deploying to Vercel + Neon". Content from the old D1 is not migrated (it was seed data only).
-
----
-
 # Handoff — Monarch Architects starter
 
-Branch: `claude/eloquent-lovelace-eykpo5` (not merged to `main`, no PR opened). Source brief: [`docs/monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo (`master`; `docs/monarch-website-brief.md`, `src/`).
+Branch: `main` (deployed to Vercel: https://monarch-next-template.vercel.app). Stack: Next 16.4.6 · React 19.2.9 · Payload 3.94.1 · **Neon Postgres** (`@payloadcms/db-postgres`) · **Vercel Blob** (`@payloadcms/storage-vercel-blob`). Source brief: [`monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo.
+
+History: the site first ran on Cloudflare Workers + D1 + R2 (OpenNext). The Free plan's 10 ms CPU limit caused Error 1102 on the admin and uncached routes even after ISR caching, so it was moved to Vercel + Neon + Blob. The last Cloudflare version is commit `8c75093`.
 
 ## How to resume
 ```bash
-git checkout claude/eloquent-lovelace-eykpo5 && pnpm install --ignore-workspace
-cp .env.example .env     # set PAYLOAD_SECRET
-pnpm migrate:local && pnpm seed:local && pnpm dev:local     # http://localhost:3000/tr
+pnpm install --ignore-workspace
+cp .env.example .env          # DATABASE_URL (Neon pooled), PAYLOAD_SECRET; BLOB_READ_WRITE_TOKEN optional locally
+pnpm migrate && pnpm seed && pnpm dev     # http://localhost:3000/tr
 ```
-Create the first admin at `/admin` (first user → `admin`). Local state is in `.wrangler/` (gitignored).
+Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored, local only — never seed production that way). `pnpm seed` **wipes content collections** of whatever `DATABASE_URL` points at. Vercel build command is `pnpm vercel-build` (migrate, then build; the build prerenders from the DB).
 
-## Done and verified (locally, miniflare D1/R2)
-* Phase 1 audit: Next 16.4.6, React 19.2.9, Payload 3.94.1 + matching `db-d1-sqlite`, `storage-r2`, `richtext-lexical`; OpenNext retained (vinext **not** evaluated). `tsc` clean; `eslint` 0 errors (46 warnings, mostly `any`/unused in generated/template files; fixed the template’s stale `FlatCompat` config).
-* CMS: Users (admin/editor), Media, Pages, Services, Projects, Posts, Categories, ContactSubmissions; globals SiteSettings, HomePage, Services/Projects/Journal landings, ContactPage; 10 blocks; localization `tr` (default) + `en`, `fallback:false`; drafts/versions; migration `20261122_205320_content_model` (applies on a fresh D1; preserves existing media alt text and gives existing users `admin`).
-* Public site: `[locale]` routes — home (port of web-effects: WebGL shader hero, loader, header hide/show, menu dialog with focus trap, GSAP reveals, Lenis, scroll-to-top), services (+detail), projects (+detail, type filter), journal (+detail, category filter, pagination), About/generic pages, contact (form + API), designed 404/error, language switcher, hreflang/canonical/OG, sitemap, robots, Article/ProfessionalService JSON-LD.
-* Seed: fully bilingual fictional content (4 services, 6 projects, 4 posts, 3 categories, About page with 6 block types, all globals).
-* Checked in a real browser at 1440×900 and 390×844: all routes render, no horizontal overflow, no console errors, hero/loader/menu/focus/language switch/form states pass.
-* Security checks (curl): anonymous cannot read/create submissions or list users; registration closes after the first user; editor cannot create/delete users or self-promote but can edit content; draft project is 404 to the public; `/api/preview` 401 without session and rejects `//evil.com`; honeypot returns silent success without storing.
+## Done and verified
+* CMS: Users (admin/editor), Media, Pages, Services, Projects, Posts, Categories, ContactSubmissions; globals SiteSettings, HomePage, landings, ContactPage; 10 blocks; localization `tr` (default) + `en`, `fallback:false`; drafts/versions.
+* Public site: `[locale]` routes (home with WebGL hero, services, projects, journal, pages, contact, 404/error, language switcher, hreflang/canonical/OG, sitemap, robots, JSON-LD). Checked earlier in a real browser at 1440×900 and 390×844.
+* Caching: all public routes are prerendered (ISR). Content changes call `revalidatePath('/', 'layout')` from `afterChange`/`afterDelete` hooks (`src/lib/revalidate.ts`). Filters/pagination are path segments (`/projects/type/x`, `/blog/category/x/page/2`) so they stay static.
+* Postgres: fresh migrations in `src/migrations` (`initial`, `blob_object_key`). Verified locally on Postgres 16: migrate, seed, build, start, edit → cached page refreshes.
+* Live check (Vercel): pages `x-vercel-cache: PRERENDER` (~0.3–0.5 s), images from the Blob CDN, `/tr/yok` 404, `/api/users` 403 anonymous, sitemap/robots OK, 6 projects in the API.
+* Security (checked on the Cloudflare build, same code): anonymous cannot read/create submissions or list users; registration closes after the first user; editor cannot create/delete users or self-promote; draft content is 404 publicly; `/api/preview` needs a session and rejects `//evil.com`; honeypot returns silent success.
+* Fixed after the move: `projects.status` renamed `buildStatus` (collided with Payload's `_status` Postgres enum); OG image URL for Blob images was `https://site.comhttps://…` — now uses `absoluteUrl()` in `src/lib/seo.ts` (blog JSON-LD too).
 
-## NOT done / not verified (be explicit when reporting)
-1. **Cloudflare**: `next build` needs `CLOUDFLARE_API_TOKEN` (remote D1 binding) — it was **not** available in the session (the user said it was added to env, but no `CLOUDFLARE_*` variable was visible). So: production build, OpenNext/wrangler dry-run, **bundle size**, remote migration + seed, R2 upload on the deployed Worker, and **Workers Free CPU (10 ms)** are all unmeasured. SSR on every request with several D1 queries may exceed Free CPU; if so optimise (cache safe public reads) before asking to move to Paid. Don’t touch the live DB without explicit approval — `pnpm seed` **wipes content collections**.
-2. Run order for the live DB: `pnpm deploy:database` (migrations) → seed (consider a staging D1 first). The live deployment today still runs the old schema.
-3. **Phase 6 single-language branch**: not created. Central files are `src/config/locales.ts` (+ `localePath`), `brand.ts`; the `[locale]` route segment, `next.config.ts` redirect (`/` → `/${defaultLocale}`), `Header` switcher, and dictionary selection would need a small, documented diff. Note `localePath` already drops the prefix when one locale is configured, but route folders still include `[locale]`.
-4. Not built: admin **Live Preview iframe** (only authenticated Draft Mode preview), content-completeness indicator for missing translations, Payload admin UI Turkish translation package, email delivery, WebSite/BreadcrumbList/Organization JSON-LD, rate limiting beyond honeypot/min-time, revalidation hooks (pages are `force-dynamic`), R2 custom media domain, vinext evaluation, per-locale slugs (slugs are shared by design).
-5. Existing `tests/` (vitest/Playwright) still target the original Payload starter home page; not run or updated.
-6. `payload.config.ts` still carries the debug logger and hardcoded `serverURL` (`…workers.dev`) from the template; it makes Payload return absolute media URLs, which the frontend strips to same-origin paths (`lib/media.ts`). Make `serverURL` env-driven per deployment.
-7. Local-only scaffolding added: `wrangler.local.jsonc`, `WRANGLER_CONFIG` hook in `payload.config.ts`, `push:false` on the D1 adapter (migrations only).
-8. Performance budgets (LCP, JS size) and accessibility audit (contrast, 200% zoom, screen reader) were not measured; reduced-motion handling is ported but only reviewed, not tested.
+## NOT done / not verified
+1. **Admin on Vercel**: first-admin creation worked (user did it); admin edit → public page refresh, media upload, preview mode, and the contact form have not been verified on the live site by the agent (no admin login). Admin latency / Neon cold starts / function region not measured.
+2. **Phase 6 single-language branch**: not created. Central files `src/config/locales.ts` (+ `localePath`), `brand.ts`; the `[locale]` segment, `next.config.ts` root redirect, `Header` switcher and dictionary selection need a small documented diff.
+3. Not built: admin Live Preview iframe (only Draft Mode preview), translation-completeness indicator, Payload admin Turkish UI translation, email delivery for the contact form, WebSite/BreadcrumbList/Organization JSON-LD, rate limiting beyond honeypot/min-time, per-locale slugs (shared by design).
+4. `tests/` (vitest/Playwright) still target the original Payload starter and were never updated or run.
+5. Performance budgets (LCP, JS size) and accessibility audit (contrast, 200% zoom, screen reader) not measured; reduced motion is ported but only reviewed.
+6. Old `?type=` / `?category=` / `?page=` query URLs no longer filter (replaced by path segments).
+7. Vercel Hobby is non-commercial only; a client site needs Pro.
 
 ## Gotchas learned
-* Array/block row `id`s are table-wide primary keys — seed namespaces them per document (`scripts/seed.ts: scope()`); keep ids identical across locales so translations merge into the same rows.
+* Array/block row `id`s are table-wide primary keys — seed namespaces them per document (`scripts/seed.ts: scope()`); keep ids identical across locales.
 * `payload run` exits when the module finishes loading → seed uses top-level `await`.
-* `drizzle-kit` migrate:create prompts interactively (“created or renamed?”) → needs a TTY; choose “create column”.
+* `migrate:create` can prompt interactively (“created or renamed?”) → needs a TTY. Switching storage adapters can add columns (Blob adds `media._objectKey`) → create a migration.
+* `src/app/(payload)/admin/importMap.js` must be regenerated (`pnpm generate:importmap`) when adapters change; the Blob plugin only registers when `BLOB_READ_WRITE_TOKEN` is set, and the token must look like `vercel_blob_rw_<id>_<secret>`.
+* Draft/Postgres enum names derive from field names: don't name a select field `status` on a collection with drafts.
 * Without `sharp`, Payload does not compute image width/height → Media `beforeChange` hook uses `image-size`.
-* Next 16: `params`/`searchParams` are Promises; `PageProps`/`LayoutProps` globals only exist after Next generates them (the repo uses `src/lib/route.ts` types instead).
-* Read `node_modules/next/dist/docs/` before changing Next conventions (see `AGENTS.md`).
+* Hero WebGL images load with CORS (needed for Blob CDN); loader has an 8 s safety timeout and a fallback if an image fails.
+* Next 16: `params`/`searchParams` are Promises; route types live in `src/lib/route.ts`. Read `node_modules/next/dist/docs/` before changing Next conventions (see `AGENTS.md`).
+* `neon.ts` / `@neon/config` come from `neon init`; the app itself only uses `DATABASE_URL`.
 
-## Suggested next steps (in order)
-1. Provide `CLOUDFLARE_API_TOKEN` (or run on your machine): `pnpm build`, `opennextjs-cloudflare build`, record bundle size; deploy to a **staging** Worker/D1/R2; migrate + seed; test admin login, upload, preview, contact on the deployed Worker; record CPU per route.
-2. Fix any Free-plan CPU hot spots; decide with the owner before using Paid.
-3. Create the `single-language` branch from the finished bilingual state and document the diff in the README.
-4. Update/replace `tests/` with tests for locales, preview auth, contact access, roles.
-5. Add live preview iframe, completeness indicator, structured data, email provider if wanted.
+## Suggested next steps
+1. Verify on the live site: admin edit → refresh, upload an image, Preview, contact form (then delete the test submission).
+2. Replace `tests/` with tests for locales, preview auth, contact access, roles.
+3. Create the `single-language` branch from this state and document the diff in the README.
+4. Live preview iframe, completeness indicator, extra structured data, email provider if wanted.

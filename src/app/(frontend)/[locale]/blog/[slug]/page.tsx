@@ -8,7 +8,7 @@ import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
 import { getPost, getRelatedPosts, getSettings, getSlugs } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
-import { buildMetadata, siteUrl } from '../../../../../lib/seo'
+import { absoluteUrl, buildMetadata, siteUrl } from '../../../../../lib/seo'
 import { formatDate, readingMinutes } from '../../../../../lib/text'
 
 export async function generateStaticParams(): Promise<{ locale: string; slug: string }[]> {
@@ -43,7 +43,7 @@ export default async function PostPage({ params }: LocaleSlugParams) {
     inLanguage: locale,
     author: p.author ? { '@type': 'Person', name: p.author } : undefined,
     publisher: site?.companyName ? { '@type': 'Organization', name: site.companyName } : undefined,
-    image: image ? `${siteUrl()}${image.src}` : undefined,
+    image: image ? absoluteUrl(image.src) : undefined,
     mainEntityOfPage: `${siteUrl()}${localePath(locale, `/blog/${slug}`)}`,
   }
   return (
