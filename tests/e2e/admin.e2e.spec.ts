@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { defaultLocale, url } from '../helpers/edition'
 
 const admin = { email: 'e2e-admin@example.com', password: 'E2e-Password-123!' }
 
@@ -40,21 +41,21 @@ test.describe('admin and cache refresh', () => {
 
   test('publishing an edit refreshes the cached public page', async ({ request }) => {
     const headers = { Authorization: `JWT ${token}` }
-    const { docs } = await (await request.get('/api/projects?limit=1&locale=tr', { headers })).json()
+    const { docs } = await (await request.get(`/api/projects?limit=1&locale=${defaultLocale}`, { headers })).json()
     const marker = `E2E-${Date.now()}`
-    expect(await (await request.get('/tr/projects')).text()).not.toContain(marker)
-    const patch = await request.patch(`/api/projects/${docs[0].id}?locale=tr`, { headers, data: { title: marker, _status: 'published' } })
+    expect(await (await request.get(url('/projects'))).text()).not.toContain(marker)
+    const patch = await request.patch(`/api/projects/${docs[0].id}?locale=${defaultLocale}`, { headers, data: { title: marker, _status: 'published' } })
     expect(patch.status()).toBe(200)
-    await expect.poll(async () => (await (await request.get('/tr/projects')).text()).includes(marker), { timeout: 15_000 }).toBe(true)
+    await expect.poll(async () => (await (await request.get(url('/projects'))).text()).includes(marker), { timeout: 15_000 }).toBe(true)
   })
 
   test('a saved draft does not change the public page', async ({ request }) => {
     const headers = { Authorization: `JWT ${token}` }
-    const { docs } = await (await request.get('/api/projects?limit=1&locale=tr', { headers })).json()
+    const { docs } = await (await request.get(`/api/projects?limit=1&locale=${defaultLocale}`, { headers })).json()
     const marker = `DRAFT-${Date.now()}`
-    const patch = await request.patch(`/api/projects/${docs[0].id}?locale=tr&draft=true`, { headers, data: { title: marker } })
+    const patch = await request.patch(`/api/projects/${docs[0].id}?locale=${defaultLocale}&draft=true`, { headers, data: { title: marker } })
     expect(patch.status()).toBe(200)
     await new Promise((r) => setTimeout(r, 1500))
-    expect(await (await request.get('/tr/projects')).text()).not.toContain(marker)
+    expect(await (await request.get(url('/projects'))).text()).not.toContain(marker)
   })
 })

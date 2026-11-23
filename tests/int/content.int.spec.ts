@@ -3,6 +3,7 @@ import { getPayload, type Payload } from 'payload'
 import config from '../../src/payload.config'
 import { getPageBySlug, getSlugs } from '../../src/lib/queries'
 import { revalidateAfterChange } from '../../src/lib/revalidate'
+import { isMultilingual } from '../helpers/edition'
 
 let payload: Payload
 
@@ -13,7 +14,7 @@ beforeAll(async () => {
   payload = await getPayload({ config: await config })
   await page('only-turkish', 'Sadece Türkçe', 'published')
   const both = await page('both', 'Her ikisi', 'published')
-  await payload.update({ collection: 'pages', id: both.id, locale: 'en', data: { title: 'Both', _status: 'published' } as any, draft: false, overrideAccess: true })
+  if (isMultilingual) await payload.update({ collection: 'pages', id: both.id, locale: 'en', data: { title: 'Both', _status: 'published' } as any, draft: false, overrideAccess: true })
   await page('secret-draft', 'Taslak', 'draft')
 })
 
@@ -29,7 +30,7 @@ describe('drafts', () => {
   })
 })
 
-describe('translations (no silent fallback)', () => {
+describe.skipIf(!isMultilingual)('translations (no silent fallback)', () => {
   it('serves a translated page in its own language', async () => {
     expect((await getPageBySlug('both', { locale: 'en' }))?.title).toBe('Both')
     expect((await getPageBySlug('both', { locale: 'tr' }))?.title).toBe('Her ikisi')
@@ -51,5 +52,12 @@ describe('cache revalidation hook', () => {
   it('returns the document unchanged', () => {
     const doc = { id: 7 }
     expect((revalidateAfterChange as any)({ doc, context: {} })).toBe(doc)
+  })
+})
+
+describe.skipIf(isMultilingual)('single-language edition', () => {
+  it('serves every published page in the only language', async () => {
+    expect((await getPageBySlug('both', { locale: 'tr' }))?.title).toBe('Her ikisi')
+    expect((await getSlugs('pages', 'tr')).sort()).toEqual(['both', 'only-turkish'])
   })
 })

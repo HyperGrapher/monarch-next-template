@@ -4,6 +4,7 @@ import { getDictionary } from '../../src/lib/i18n/dictionary'
 import { localUrl } from '../../src/lib/media'
 import { absoluteUrl } from '../../src/lib/seo'
 import { projectTypes } from '../../src/collections/Projects'
+import { isMultilingual } from '../helpers/edition'
 
 const shape = (v: unknown): unknown =>
   typeof v === 'function' ? 'fn' : Array.isArray(v) ? v.map(shape) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).sort().map(([k, x]) => [k, shape(x)])) : typeof v
@@ -11,15 +12,19 @@ const shape = (v: unknown): unknown =>
 describe('locales', () => {
   it('has a default locale that is configured', () => expect(locales).toContain(defaultLocale))
   it('validates locale codes', () => {
-    expect(isLocale('tr')).toBe(true)
-    expect(isLocale('en')).toBe(true)
+    expect(isLocale(defaultLocale)).toBe(true)
     expect(isLocale('de')).toBe(false)
     expect(isLocale(undefined)).toBe(false)
   })
-  it('builds prefixed paths', () => {
+  it.skipIf(!isMultilingual)('builds prefixed paths', () => {
     expect(localePath('tr')).toBe('/tr')
     expect(localePath('en', '/projects')).toBe('/en/projects')
     expect(localePath('en', 'blog/x')).toBe('/en/blog/x')
+  })
+  it.skipIf(isMultilingual)('builds unprefixed paths (single-language edition)', () => {
+    expect(localePath(defaultLocale)).toBe('/')
+    expect(localePath(defaultLocale, '/projects')).toBe('/projects')
+    expect(localePath(defaultLocale, 'blog/x')).toBe('/blog/x')
   })
 })
 

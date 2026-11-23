@@ -1,4 +1,4 @@
-import type { Locale } from '../../config/locales'
+import { defaultLocale, type Locale } from '../../config/locales'
 
 // Fixed interface strings (buttons, labels, form messages). Page CONTENT lives in Payload.
 type Dict = {
@@ -64,6 +64,7 @@ const tr: Dict = {
   untranslated: 'Bu içerik henüz Türkçe olarak mevcut değil.',
 }
 
-const dictionaries: Record<Locale, Dict> = { tr, en }
-export const getDictionary = (locale: Locale): Dict => dictionaries[locale]
+// Keyed by plain string so a single-language edition can keep both dictionaries without type errors.
+const dictionaries: Record<string, Dict> = { tr, en }
+export const getDictionary = (locale: Locale): Dict => dictionaries[locale] ?? dictionaries[defaultLocale]
 export type { Dict }
