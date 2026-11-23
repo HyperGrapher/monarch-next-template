@@ -34,7 +34,8 @@ pnpm dev                        # http://localhost:3000  (redirects / → /tr)
 | `seed` | Reset + seed demo content in the database `DATABASE_URL` points at |
 | `generate:types`, `generate:importmap` | Payload types, admin import map |
 | `build`, `vercel-build` | Next build; migrate + build (what Vercel runs) |
-| `lint`, `test:int`, `test:e2e` | ESLint; template tests (see Limitations) |
+| `lint` | ESLint |
+| `test:int`, `test:e2e`, `test` | Vitest integration tests; Playwright end-to-end tests; both (see Testing) |
 
 **Schema changes ship as migrations** (`pnpm payload migrate:create <name>`); dev auto-push is disabled (`push: false`). Drizzle may ask “created or renamed?” interactively — in a non-interactive shell, answer via a TTY.
 
@@ -74,5 +75,20 @@ Payload crop/focal-point are off and Next’s image optimizer is **not** used. U
 5. First deploy, then seed once from your machine with the production values (this **wipes content collections**): `DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… PAYLOAD_SECRET=… pnpm seed`, and redeploy (or edit any content) so cached pages pick up the data. Then create the first admin at `/admin`.
 6. Vercel Hobby is non-commercial; use Pro for a client site.
 
+## Testing
+
+The tests **create and delete data**, and your `.env` normally points at the real database. So they only run against an explicit throwaway database, and refuse to start if `TEST_DATABASE_URL` equals `DATABASE_URL`:
+
+```bash
+# a local Postgres, or a disposable Neon branch (never production)
+export TEST_DATABASE_URL=postgres://user:pass@localhost:5432/monarch_test
+pnpm test:int     # ~10 s: access control, drafts, translations (no fallback), revalidation hook, dictionary parity, URL helpers
+pnpm test:e2e     # ~5 min: resets + migrates + seeds the test DB, builds, starts the app, then drives Chromium
+```
+* `test:int` resets the test database (`payload run` drop + `payload migrate`) and uses the Local API with real access rules.
+* `test:e2e` runs against a **production build** (`tests/e2e/server.mjs`, port 3100, local disk media, no Blob token, no preview secret). It covers routing/locale behaviour, the home loader (including a failing hero image), contact API validation and honeypot, anonymous access, preview auth/open-redirect, admin sign-in, and that publishing an edit refreshes the cached public page while a saved draft does not.
+* The same suite covers both editions: URLs go through `tests/helpers/edition.ts`, and edition-specific tests skip themselves.
+* First-time Playwright setup: `pnpm exec playwright install chromium` (the CI image already has it).
+
 ## Limitations (also in the handoff)
-Verified locally on Postgres: migration, seed, production build, edit→cache refresh. Not yet verified on Vercel/Neon/Blob (see `docs/HANDOFF.md`). Admin live-preview iframe, content-completeness indicator, email delivery, and the single-language branch are not built. The template’s `tests/` still target the old Payload starter page.
+Verified locally on Postgres: migration, seed, production build, edit→cache refresh. Not yet verified on Vercel/Neon/Blob (see `docs/HANDOFF.md`). Admin live-preview iframe, content-completeness indicator, email delivery, and the single-language branch are not built.
