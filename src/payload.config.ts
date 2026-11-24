@@ -55,6 +55,9 @@ export default buildConfig({
   secret: secret || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
+    // Never regenerate on startup (dev, seed, tests): without a Blob token that silently drops `_objectKey`.
+    // Run `pnpm generate:types`, which sets a dummy token.
+    autoGenerate: false,
   },
   db: postgresAdapter({
     // Neon: use the POOLED connection string (host contains "-pooler").

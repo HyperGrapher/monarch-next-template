@@ -1,7 +1,7 @@
 /**
  * Seeds / RESETS the fictional bilingual demo content.
  *   pnpm seed     (uses DATABASE_URL, and BLOB_READ_WRITE_TOKEN if set, else ./media) — point it at the DB you mean!
- * WARNING: deletes all content collections (not users) before re-creating them.
+ * WARNING: deletes all content collections (not users, not contact messages) before re-creating them.
  */
 import path from 'path'
 import { getPayload } from 'payload'
@@ -25,7 +25,8 @@ async function main() {
   const payload = await getPayload({ config: await config })
   const log = (m: string) => console.log(`[seed] ${m}`)
 
-  for (const collection of ['pages', 'projects', 'services', 'posts', 'categories', 'media', 'contact-submissions'] as const) {
+  // Contact submissions are real visitor messages, never demo content: they are left alone.
+  for (const collection of ['pages', 'projects', 'services', 'posts', 'categories', 'media'] as const) {
     await payload.delete({ collection, where: { id: { exists: true } }, overrideAccess: true })
   }
   log('cleared content collections')

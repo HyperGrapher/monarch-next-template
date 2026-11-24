@@ -15,12 +15,16 @@ Step 1 status: fixed and verified locally on Postgres 16 — `tsc`, lint (0 erro
 
 ## Step 2 — Correctness
 
-- [ ] **Blog pagination is wrong when posts are untranslated.** `getPosts` (`src/lib/queries/index.ts`) filters untranslated posts *after* paginating: short or empty pages, wrong `totalPages`. Same for `getRelatedPosts`. Fix: `title: { exists: true }` in the DB query.
-- [ ] **Sitemap and hreflang point at 404s.** `sitemap.ts` lists every slug in every locale (untranslated → 404) and includes `seo.noIndex` pages; `buildMetadata` always emits alternates for all locales. Use translated slugs per locale, skip `noIndex`.
-- [ ] **WebGL hero robustness** (`src/components/hero/hero-gl.ts`): clear the 8 s timeout on cleanup; release the context (`WEBGL_lose_context`); stop the rAF loop after error/fallback; catch shader compile/link errors and fall back instead of throwing into the error boundary; draw once under reduced motion; drop `preserveDrawingBuffer`.
-- [ ] **Enable `strictNullChecks`** (`tsconfig.json`). Turning it on currently produces zero type errors.
-- [ ] **`pnpm seed` wipes `contact-submissions`** (real customer messages on production). Leave that collection out of the reset.
-- [ ] **`siteUrl()` falls back to `http://localhost:3000`** in production if `NEXT_PUBLIC_SITE_URL` is missing. Fall back to `VERCEL_PROJECT_PRODUCTION_URL` or fail the build.
+- [x] **Blog pagination is wrong when posts are untranslated.** `getPosts` (`src/lib/queries/index.ts`) filters untranslated posts *after* paginating: short or empty pages, wrong `totalPages`. Same for `getRelatedPosts`. Fixed: `title: { exists: true }` is part of the DB query (`getPosts`, `getRelatedPosts`); `tests/int/listing.int.spec.ts`.
+- [x] **Sitemap and hreflang point at 404s.** `sitemap.ts` lists every slug in every locale (untranslated → 404) and includes `seo.noIndex` pages; `buildMetadata` always emits alternates for all locales. Fixed: the sitemap queries each locale for translated, published docs and skips `noIndex`; alternates only list existing translations. Detail pages pass `getTranslatedLocales()` to `buildMetadata({ availableLocales })`. Also fixed while there: `pagination: false` alone still applies Payload's default limit of 10, so the sitemap uses `limit: 0`. Tested in `listing.int.spec.ts`.
+- [x] **WebGL hero robustness** (`src/components/hero/hero-gl.ts`): clear the 8 s timeout on cleanup; release the context (`WEBGL_lose_context`); stop the rAF loop after error/fallback; catch shader compile/link errors and fall back instead of throwing into the error boundary; draw once under reduced motion; drop `preserveDrawingBuffer`. Fixed (cleanup deletes textures/buffer/program instead of `WEBGL_lose_context`, because React Strict Mode remounts on the same canvas); existing e2e loader/fallback tests pass.
+- [x] **Enable `strictNullChecks`** (`tsconfig.json`). Enabled. (It immediately flagged a nullable WebGL context in the new hero cleanup.)
+- [x] **`pnpm seed` wipes `contact-submissions`** (real customer messages on production). Fixed: the seed no longer deletes them.
+- [x] **`siteUrl()` falls back to `http://localhost:3000`** in production if `NEXT_PUBLIC_SITE_URL` is missing. Fixed: falls back to `https://$VERCEL_PROJECT_PRODUCTION_URL` before localhost.
+
+- [x] **Running the seed or tests rewrote `src/payload-types.ts` without `_objectKey`** (found while working on this list). Payload regenerates types whenever it starts outside production, and those runs have no Blob token. Fixed: `typescript.autoGenerate: false`; `pnpm generate:types` and `pnpm migrate:create` now set a dummy Blob token themselves.
+
+Step 2 status: done. `tsc` (strict null checks), lint 0 errors, `test:int` 46 passed, `test:e2e` 38 passed.
 
 ## Step 3 — Performance
 

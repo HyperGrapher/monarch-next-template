@@ -23,7 +23,7 @@ pnpm dev                        # http://localhost:3000  (redirects / → /tr)
 
 `/admin` → first visit shows Payload's “create first user” form. **The first user becomes `admin`.** Registration is closed as soon as one user exists. Never ship default credentials.
 
-`pnpm seed` **deletes all content collections (not users)** before re-creating them. That is the “reset demo content” command.
+`pnpm seed` **deletes all content collections (not users, not contact messages)** before re-creating them. That is the “reset demo content” command.
 
 ## Scripts
 

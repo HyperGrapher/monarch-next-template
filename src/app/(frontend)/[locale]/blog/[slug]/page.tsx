@@ -6,7 +6,7 @@ import { RichText } from '../../../../../components/ui/RichText'
 import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getPost, getRelatedPosts, getSettings, getSlugs } from '../../../../../lib/queries'
+import { getPost, getRelatedPosts, getSettings, getSlugs, getTranslatedLocales } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { absoluteUrl, buildMetadata, siteUrl } from '../../../../../lib/seo'
 import { formatDate, readingMinutes } from '../../../../../lib/text'
@@ -19,9 +19,9 @@ export async function generateStaticParams(): Promise<{ locale: string; slug: st
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}
-  const [p, site] = await Promise.all([getPost(slug, { locale }), getSettings({ locale })])
+  const [p, site, availableLocales] = await Promise.all([getPost(slug, { locale }), getSettings({ locale }), getTranslatedLocales('posts', slug)])
   if (!p) return {}
-  return buildMetadata({ locale, path: `/blog/${slug}`, title: p.title, description: p.excerpt, seo: p.seo, siteName: site?.companyName, fallbackImage: p.featuredImage, type: 'article' })
+  return buildMetadata({ locale, path: `/blog/${slug}`, availableLocales, title: p.title, description: p.excerpt, seo: p.seo, siteName: site?.companyName, fallbackImage: p.featuredImage, type: 'article' })
 }
 
 export default async function PostPage({ params }: LocaleSlugParams) {

@@ -7,7 +7,7 @@ import { PageHeader } from '../../../../../components/ui/PageHeader'
 import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getProject, getProjects, getSettings, getSlugs } from '../../../../../lib/queries'
+import { getProject, getProjects, getSettings, getSlugs, getTranslatedLocales } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { buildMetadata } from '../../../../../lib/seo'
 import { formatArea } from '../../../../../lib/text'
@@ -20,9 +20,9 @@ export async function generateStaticParams(): Promise<{ locale: string; slug: st
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}
-  const [p, site] = await Promise.all([getProject(slug, { locale }), getSettings({ locale })])
+  const [p, site, availableLocales] = await Promise.all([getProject(slug, { locale }), getSettings({ locale }), getTranslatedLocales('projects', slug)])
   if (!p) return {}
-  return buildMetadata({ locale, path: `/projects/${slug}`, title: p.title, description: p.summary, seo: p.seo, siteName: site?.companyName, fallbackImage: p.coverImage })
+  return buildMetadata({ locale, path: `/projects/${slug}`, availableLocales, title: p.title, description: p.summary, seo: p.seo, siteName: site?.companyName, fallbackImage: p.coverImage })
 }
 
 export default async function ProjectPage({ params }: LocaleSlugParams) {

@@ -1,4 +1,5 @@
-import type { Locale } from '../../config/locales'
+import type { Where } from 'payload'
+import { locales, type Locale } from '../../config/locales'
 import type { Category, ContactPage, HomePage, JournalLanding, Page, Post, Project, ProjectsLanding, Service, ServicesLanding, SiteSetting } from '../../payload-types'
 import { getClient, isDraft } from '../payload'
 
@@ -56,10 +57,14 @@ export async function getProject(slug: string, { locale }: Ctx): Promise<Project
   return translated(docs)[0] ?? null
 }
 
+/** Documents that have a title in the requested locale. Filtering in the query (not afterwards) keeps pagination right. */
+const hasTitle: Where = { title: { exists: true } }
+const and = (...parts: (Where | undefined)[]): Where => ({ and: parts.filter((p): p is Where => !!p) })
+
 export const POSTS_PER_PAGE = 6
 export async function getPosts({ locale }: Ctx, page = 1, categorySlug?: string) {
   const { payload, opts } = await base(locale)
-  const where: any = categorySlug ? { 'categories.slug': { equals: categorySlug } } : undefined
+  const where = and(hasTitle, categorySlug ? { 'categories.slug': { equals: categorySlug } } : undefined)
   const res = await payload.find({ collection: 'posts', sort: '-publishedAt', limit: POSTS_PER_PAGE, page, where, ...opts })
   return { ...res, docs: translated(res.docs) }
 }
@@ -70,8 +75,8 @@ export async function getPost(slug: string, { locale }: Ctx): Promise<Post | nul
 }
 export async function getRelatedPosts(post: Post, { locale }: Ctx, limit = 3): Promise<Post[]> {
   const { payload, opts } = await base(locale)
-  const { docs } = await payload.find({ collection: 'posts', where: { id: { not_equals: post.id } }, sort: '-publishedAt', limit: limit + 3, ...opts })
-  return translated(docs).slice(0, limit)
+  const { docs } = await payload.find({ collection: 'posts', where: and(hasTitle, { id: { not_equals: post.id } }), sort: '-publishedAt', limit, ...opts })
+  return translated(docs)
 }
 export async function getCategories({ locale }: Ctx): Promise<Category[]> {
   const { payload } = await base(locale)
@@ -84,4 +89,15 @@ export async function getSlugs(collection: 'pages' | 'services' | 'projects' | '
   const payload = await getClient()
   const { docs } = await payload.find({ collection, locale, fallbackLocale: false, limit: 500, pagination: false, depth: 0, overrideAccess: false, select: { slug: true, title: true } as any })
   return (docs as { slug?: string | null; title?: string | null }[]).filter((d) => d.slug && d.title).map((d) => d.slug as string)
+}
+
+/**
+ * Locales in which a published document with this slug has a title (used for hreflang alternates:
+ * never point search engines at a translation that 404s).
+ */
+export async function getTranslatedLocales(collection: 'pages' | 'services' | 'projects' | 'posts', slug: string): Promise<Locale[]> {
+  const payload = await getClient()
+  const { docs } = await payload.find({ collection, locale: 'all', where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: false, select: { title: true } as any })
+  const titles = (docs[0] as unknown as { title?: Record<string, string | null> } | undefined)?.title ?? {}
+  return locales.filter((l) => !!titles[l])
 }

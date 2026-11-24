@@ -51,10 +51,11 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * Next matches dynamic routes **before** `fallback` rewrites (relevant to the single-language edition's clean-URL rewrite: it must be `afterFiles`, excluding `/admin` and `/api`).
 * `payload.db.migrate()` cannot load the migration `.ts` files under vitest (type-only named imports); tests shell out to the `payload` CLI. `payload migrate:fresh --force-accept` still prompts, so the test reset uses `dropDatabase` + `migrate`.
 * Playwright's `request` context keeps cookies: after `first-register` it is signed in. Use fresh contexts for anonymous checks.
-* `generate:types` / `migrate:create` without `BLOB_READ_WRITE_TOKEN` drop the Blob `_objectKey` column/type. Use a dummy `vercel_blob_rw_dummy_x` token when generating, and never commit a `payload-types.ts` that lost `_objectKey`.
+* `generate:types` / `migrate:create` without `BLOB_READ_WRITE_TOKEN` would drop the Blob `_objectKey` column/type: the package scripts now set a dummy `vercel_blob_rw_dummy_x` token themselves, and type auto-generation on startup is off (`typescript.autoGenerate: false`) so seed/tests/dev no longer rewrite `payload-types.ts`. Never commit a `payload-types.ts` that lost `_objectKey`.
+* `payload.find({ pagination: false })` still applies the default `limit` (10) in the Postgres adapter: pass `limit: 0` for "all".
 
 ## Suggested next steps
-0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; step 1 is done).
+0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; steps 1–2 are done).
 1. Check the first CI run on GitHub (Actions tab); consider branch protection / requiring the check before deploys if you want CI to gate Vercel.
 2. Completeness indicator, extra structured data, email provider if wanted.
 3. A single-language edition, if a client needs one: edit `src/config/locales.ts`, add clean-URL rewrites, generate migrations on its own Neon DB + Vercel project.

@@ -8,7 +8,7 @@ import { PageHeader } from '../../../../../components/ui/PageHeader'
 import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getService, getSettings, getSlugs } from '../../../../../lib/queries'
+import { getService, getSettings, getSlugs, getTranslatedLocales } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { buildMetadata } from '../../../../../lib/seo'
 
@@ -20,9 +20,9 @@ export async function generateStaticParams(): Promise<{ locale: string; slug: st
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}
-  const [s, site] = await Promise.all([getService(slug, { locale }), getSettings({ locale })])
+  const [s, site, availableLocales] = await Promise.all([getService(slug, { locale }), getSettings({ locale }), getTranslatedLocales('services', slug)])
   if (!s) return {}
-  return buildMetadata({ locale, path: `/services/${slug}`, title: s.title, description: s.summary, seo: s.seo, siteName: site?.companyName, fallbackImage: s.coverImage })
+  return buildMetadata({ locale, path: `/services/${slug}`, availableLocales, title: s.title, description: s.summary, seo: s.seo, siteName: site?.companyName, fallbackImage: s.coverImage })
 }
 
 export default async function ServicePage({ params }: LocaleSlugParams) {

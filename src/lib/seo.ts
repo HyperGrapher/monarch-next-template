@@ -3,7 +3,14 @@ import { isMultilingual, localePath, locales, ogLocales, type Locale } from '../
 import type { Media } from '../payload-types'
 import { localUrl } from './media'
 
-export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/$/, '')
+/**
+ * Canonical origin. NEXT_PUBLIC_SITE_URL should always be set in production; if it is missing, use the
+ * production domain Vercel provides instead of silently emitting localhost canonicals/sitemaps.
+ */
+export const siteUrl = () => {
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : ''
+  return (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || vercel || 'http://localhost:3000').replace(/\/$/, '')
+}
 
 /** Absolute URL for a path or an already-absolute URL (Blob CDN images are absolute). */
 export const absoluteUrl = (u: string) => (/^https?:\/\//.test(u) ? u : `${siteUrl()}${u}`)
@@ -19,6 +26,8 @@ export function buildMetadata(opts: {
   siteName?: string | null
   fallbackImage?: number | Media | null
   type?: 'website' | 'article'
+  /** Locales this content exists in (hreflang). Default: all — right for fixed routes and globals. */
+  availableLocales?: readonly Locale[]
 }): Metadata {
   const { locale, path, seo } = opts
   const title = seo?.title || opts.title || opts.siteName || undefined
@@ -31,7 +40,7 @@ export function buildMetadata(opts: {
     description,
     alternates: {
       canonical: url,
-      languages: isMultilingual ? Object.fromEntries(locales.map((l) => [l, `${siteUrl()}${localePath(l, path)}`])) : undefined,
+      languages: isMultilingual && (opts.availableLocales ?? locales).length > 1 ? Object.fromEntries((opts.availableLocales ?? locales).map((l) => [l, `${siteUrl()}${localePath(l, path)}`])) : undefined,
     },
     robots: seo?.noIndex ? { index: false, follow: false } : undefined,
     openGraph: { title: title ?? undefined, description, url, siteName: opts.siteName ?? undefined, locale: ogLocales[locale], type: opts.type ?? 'website', images: image },

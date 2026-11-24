@@ -136,7 +136,8 @@ export type HeroRefs = {
 };
 
 function sh(gl: WebGLRenderingContext, type: number, src: string) {
-	const s = gl.createShader(type)!;
+	const s = gl.createShader(type);
+	if (!s) throw new Error("createShader failed");
 	gl.shaderSource(s, src);
 	gl.compileShader(s);
 	if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
@@ -158,21 +159,35 @@ function loadImage(src: string) {
 
 export function initHero(r: HeroRefs) {
 	const { stage, canvas } = r;
-	const gl = canvas.getContext("webgl", {
-		antialias: false,
-		alpha: false,
-		preserveDrawingBuffer: true,
-	});
-	if (!gl) {
-		r.onFallback?.();
+	// The loader waits for exactly one of: first frame drawn, or fallback.
+	let notified = false;
+	const release = (fallback: boolean) => {
+		if (notified) return;
+		notified = true;
+		if (fallback) r.onFallback?.();
 		r.onReady?.();
+	};
+
+	const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
+	if (!gl) {
+		release(true);
 		return () => {};
 	}
 
-	const prog = gl.createProgram()!;
-	gl.attachShader(prog, sh(gl, gl.VERTEX_SHADER, VERT));
-	gl.attachShader(prog, sh(gl, gl.FRAGMENT_SHADER, FRAG));
-	gl.linkProgram(prog);
+	let prog: WebGLProgram;
+	try {
+		prog = gl.createProgram()!;
+		gl.attachShader(prog, sh(gl, gl.VERTEX_SHADER, VERT));
+		gl.attachShader(prog, sh(gl, gl.FRAGMENT_SHADER, FRAG));
+		gl.linkProgram(prog);
+		if (!gl.getProgramParameter(prog, gl.LINK_STATUS))
+			throw new Error(gl.getProgramInfoLog(prog) ?? "link error");
+	} catch (err) {
+		// A driver that cannot compile the shader must not take the page down: show the plain photos.
+		console.warn("[hero] shader setup failed, showing plain photos:", err);
+		release(true);
+		return () => {};
+	}
 	// biome-ignore lint/correctness/useHookAtTopLevel: WebGL call, not a React hook
 	gl.useProgram(prog);
 
@@ -216,41 +231,42 @@ export function initHero(r: HeroRefs) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		return t;
 	};
-	makeTex(0);
-	makeTex(1);
-	makeTex(2);
+	const textures = [makeTex(0), makeTex(1), makeTex(2)];
 	gl.uniform1i(u.left, 0);
 	gl.uniform1i(u.right, 1);
 	gl.uniform1i(u.text, 2);
 
 	const sizes = { l: [1, 1], r: [1, 1] };
 	let ready = false;
+	let stopped = false; // unmounted, or gave up and showed the fallback
+	let dirty = true; // reduced motion: draw only when something changed
+	const giveUp = (err?: unknown) => {
+		if (stopped) return;
+		if (err) console.warn("[hero] WebGL setup failed, showing plain photos:", err);
+		stop();
+		release(true);
+	};
 	Promise.all([
 		loadImage(r.leftSrc),
 		loadImage(r.rightSrc),
 		document.fonts.load('800 200px "Archivo Variable"'),
-	]).then(([l, rr]) => {
-		gl.activeTexture(gl.TEXTURE0);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, l);
-		gl.activeTexture(gl.TEXTURE1);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, rr);
-		sizes.l = [l.naturalWidth, l.naturalHeight];
-		sizes.r = [rr.naturalWidth, rr.naturalHeight];
-		ready = true;
-		layout();
-	}).catch((err) => {
-		console.warn("[hero] WebGL setup failed, showing plain photos:", err);
+	])
+		.then(([l, rr]) => {
+			if (stopped) return;
+			gl.activeTexture(gl.TEXTURE0);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, l);
+			gl.activeTexture(gl.TEXTURE1);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, rr);
+			sizes.l = [l.naturalWidth, l.naturalHeight];
+			sizes.r = [rr.naturalWidth, rr.naturalHeight];
+			ready = true;
+			layout();
+		})
 		// An image failed to load: never leave the loader up forever.
-		r.onFallback?.();
-		r.onReady?.();
-	});
+		.catch(giveUp);
 	// Safety net: release the loader even if loading stalls.
-	setTimeout(() => {
-		if (!notified) {
-			notified = true;
-			r.onFallback?.();
-			r.onReady?.();
-		}
+	const timeout = window.setTimeout(() => {
+		if (!notified) giveUp(new Error("timed out"));
 	}, 8000);
 
 	const rects = { l: [0, 0, 0, 0], r: [0, 0, 0, 0] };
@@ -313,6 +329,7 @@ export function initHero(r: HeroRefs) {
 		defaultSplit = rects.l[0] + rects.l[2] * 0.955;
 		if (!split) split = defaultSplit;
 		splitTarget = defaultSplit;
+		dirty = true;
 	}
 	layout();
 
@@ -351,11 +368,14 @@ export function initHero(r: HeroRefs) {
 	ro.observe(stage);
 
 	let raf = 0;
-	let notified = false;
 	const t0 = performance.now();
 	const frame = () => {
+		if (stopped) return;
 		raf = requestAnimationFrame(frame);
 		if (!ready || !visible) return;
+		// Reduced motion: time is frozen and the pointer is ignored, so redraw only after a layout change.
+		if (reduced && !dirty) return;
+		dirty = false;
 		split += (splitTarget - split) * 0.08;
 		mouse.amt += (mouse.target - mouse.amt) * 0.1;
 		gl.uniform2f(u.res, canvas.width, canvas.height);
@@ -369,18 +389,29 @@ export function initHero(r: HeroRefs) {
 		gl.uniform1f(u.mouseAmt, mouse.amt);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 		if (!notified) {
-			notified = true;
+			window.clearTimeout(timeout);
 			// wait a paint so the canvas actually has pixels on screen
-			requestAnimationFrame(() => r.onReady?.());
+			requestAnimationFrame(() => {
+				if (!stopped) release(false);
+			});
 		}
 	};
 	raf = requestAnimationFrame(frame);
 
-	return () => {
+	function stop() {
+		if (stopped) return;
+		stopped = true;
+		window.clearTimeout(timeout);
 		cancelAnimationFrame(raf);
 		ro.disconnect();
 		io.disconnect();
 		window.removeEventListener("pointermove", onMove);
 		document.removeEventListener("pointerleave", onLeave);
-	};
+		// Free GPU memory now. (Not WEBGL_lose_context: React Strict Mode remounts on the same canvas,
+		// and a lost context would make the second mount fall back.)
+		for (const t of textures) gl!.deleteTexture(t);
+		gl!.deleteBuffer(buf);
+		gl!.deleteProgram(prog);
+	}
+	return stop;
 }

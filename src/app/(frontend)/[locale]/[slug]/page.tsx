@@ -5,7 +5,7 @@ import { Photo } from '../../../../components/ui/Photo'
 import { PageHeader } from '../../../../components/ui/PageHeader'
 import { isLocale, locales } from '../../../../config/locales'
 import { img } from '../../../../lib/media'
-import { getPageBySlug, getSettings, getSlugs } from '../../../../lib/queries'
+import { getPageBySlug, getSettings, getSlugs, getTranslatedLocales } from '../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../lib/route'
 import { buildMetadata } from '../../../../lib/seo'
 
@@ -18,9 +18,9 @@ export async function generateStaticParams(): Promise<{ locale: string; slug: st
 export async function generateMetadata({ params }: LocaleSlugParams): Promise<Metadata> {
   const { locale, slug } = await params
   if (!isLocale(locale)) return {}
-  const [p, site] = await Promise.all([getPageBySlug(slug, { locale }), getSettings({ locale })])
+  const [p, site, availableLocales] = await Promise.all([getPageBySlug(slug, { locale }), getSettings({ locale }), getTranslatedLocales('pages', slug)])
   if (!p) return {}
-  return buildMetadata({ locale, path: `/${slug}`, title: p.title, description: p.intro, seo: p.seo, siteName: site?.companyName, fallbackImage: p.featuredImage })
+  return buildMetadata({ locale, path: `/${slug}`, availableLocales, title: p.title, description: p.intro, seo: p.seo, siteName: site?.companyName, fallbackImage: p.featuredImage })
 }
 
 export default async function CmsPage({ params }: LocaleSlugParams) {
