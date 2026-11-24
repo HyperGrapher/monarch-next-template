@@ -74,3 +74,8 @@ body {
 		scroll-behavior: auto !important;
 	}
 }
+
+/* Inside the admin's Live Preview iframe the "draft preview" banner (with its exit link) is just noise. */
+html[data-embedded] [data-preview-banner] {
+  display: none;
+}

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import '../styles.css'
 import { Footer } from '../../../components/layout/Footer'
 import { Header, type NavItem } from '../../../components/layout/Header'
+import { LivePreviewListener } from '../../../components/layout/LivePreviewListener'
 import { PreviewBanner } from '../../../components/layout/PreviewBanner'
 import { ScrollTop } from '../../../components/layout/ScrollTop'
 import { Shell } from '../../../components/layout/Shell'
@@ -12,6 +13,7 @@ import { getDictionary } from '../../../lib/i18n/dictionary'
 import type { LocaleLayoutProps } from '../../../lib/route'
 import { buildMetadata, siteUrl } from '../../../lib/seo'
 import { getSettings } from '../../../lib/queries'
+import { isDraft } from '../../../lib/payload'
 
 // Statically cached (ISR). CMS edits purge it via revalidatePath (src/lib/revalidate.ts);
 // the daily revalidate is only a safety net.
@@ -43,6 +45,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     ...(brandConfig.modules.journal ? [{ key: 'blog', href: '/blog', label: t.nav.blog }] : []),
     { key: 'contact', href: '/contact', label: t.nav.contact },
   ]
+  const draft = await isDraft()
   const address = s?.address?.map((a) => a.line).slice(0, 2).join(', ')
 
   return (
@@ -72,6 +75,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           <ScrollTop label={t.scrollTop} />
         </Shell>
         <PreviewBanner locale={locale} />
+        {draft && <LivePreviewListener />}
       </body>
     </html>
   )

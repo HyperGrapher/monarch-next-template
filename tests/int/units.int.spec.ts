@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defaultLocale, isLocale, localePath, locales } from '../../src/config/locales'
 import { getDictionary } from '../../src/lib/i18n/dictionary'
 import { localUrl } from '../../src/lib/media'
+import { livePreview, requestOrigin } from '../../src/lib/preview'
 import { absoluteUrl } from '../../src/lib/seo'
 import { projectTypes } from '../../src/collections/Projects'
 import { isMultilingual, secondLocale } from '../helpers/edition'
@@ -61,5 +62,33 @@ describe('media + seo URL helpers', () => {
     const blob = 'https://abc.public.blob.vercel-storage.com/a.webp'
     expect(absoluteUrl(blob)).toBe(blob)
     expect(absoluteUrl('/api/media/file/a.webp')).toBe('http://localhost:3000/api/media/file/a.webp')
+  })
+})
+
+describe('live preview url', () => {
+  const req = (h: Record<string, string>) => ({ headers: new Headers(h) }) as any
+  const urlOf = (cfg: ReturnType<typeof livePreview>, data: any, headers: Record<string, string>) =>
+    (cfg.url as any)({ data, locale: { code: defaultLocale }, req: req(headers) })
+
+  it('uses the origin the admin is served from', () => {
+    expect(requestOrigin(req({ host: 'localhost:3000' }))).toBe('http://localhost:3000')
+    expect(requestOrigin(req({ host: 'site.example.com' }))).toBe('https://site.example.com')
+    expect(requestOrigin(req({ host: 'internal:3000', 'x-forwarded-host': 'site.example.com', 'x-forwarded-proto': 'https' }))).toBe('https://site.example.com')
+  })
+  it('falls back to the configured site url without a host header', () => {
+    expect(requestOrigin(req({}))).toMatch(/^https?:\/\//)
+  })
+  it('is absolute, goes through /api/preview and carries the document path', async () => {
+    const cfg = livePreview((d) => (d.slug ? `/x/${d.slug}` : null))
+    const u = await urlOf(cfg, { slug: 'abc' }, { host: 'localhost:3000' })
+    expect(u.startsWith('http://localhost:3000/api/preview?path=')).toBe(true)
+    expect(decodeURIComponent(u)).toContain('/x/abc')
+  })
+  it('is disabled while the document cannot be previewed yet', async () => {
+    const cfg = livePreview((d) => (d.slug ? `/x/${d.slug}` : null))
+    expect(await urlOf(cfg, {}, { host: 'localhost:3000' })).toBeNull()
+  })
+  it('offers device breakpoints', () => {
+    expect(livePreview(() => '/').breakpoints?.map((b) => b.name)).toEqual(['mobile', 'tablet', 'laptop'])
   })
 })

@@ -1,14 +1,14 @@
 import type { GlobalConfig } from 'payload'
 import { staffOnly } from '../access'
 import { seoField } from '../fields/seo'
-import { previewUrl } from '../lib/preview'
+import { autosaveDrafts, livePreview, previewUrl } from '../lib/preview'
 
 export const HomePage: GlobalConfig = {
   slug: 'home-page',
   label: 'Home page',
-  admin: { group: 'Content', preview: (_doc, { locale }) => previewUrl('/', locale) },
+  admin: { group: 'Content', preview: (_doc, { locale }) => previewUrl('/', locale), livePreview: livePreview(() => '/') },
   access: { read: () => true, update: staffOnly },
-  versions: { drafts: true, max: 10 },
+  versions: { drafts: autosaveDrafts, max: 10 },
   fields: [
     {
       type: 'tabs',

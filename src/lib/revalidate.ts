@@ -14,8 +14,12 @@ const purge = () => {
   }
 }
 
-export const revalidateAfterChange: CollectionAfterChangeHook & GlobalAfterChangeHook = ({ doc, context }: any) => {
-  if (!context?.disableRevalidate) purge()
+// Autosaves (Live Preview) only write a draft version while the editor types; they never change what visitors
+// see, so they must not purge the cache every second.
+const isAutosave = (req: any) => req?.query?.autosave === 'true' || req?.query?.autosave === true
+
+export const revalidateAfterChange: CollectionAfterChangeHook & GlobalAfterChangeHook = ({ doc, context, req }: any) => {
+  if (!context?.disableRevalidate && !isAutosave(req)) purge()
   return doc
 }
 export const revalidateAfterDelete: CollectionAfterDeleteHook = ({ doc, context }: any) => {
