@@ -78,6 +78,9 @@ async function main() {
       console.error(`[sizes] ✗ #${doc.id} ${doc.filename}:`, e instanceof Error ? e.message : e)
     }
   }
+  if (!dryRun && todo.length > failed) {
+    console.log('[sizes] Done. Published pages are cached: save any document in the admin (e.g. Site settings) or redeploy so they render the new srcset.')
+  }
   process.exit(failed ? 1 : 0)
 }
 
