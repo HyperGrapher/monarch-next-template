@@ -1,6 +1,6 @@
-# Monarch Architects — Next.js + Payload CMS starter (Vercel, Neon, Blob)
+# Next.js + Payload CMS starter (Vercel, Neon, Blob)
 
-A reusable client-website starter. The first instance is **Monarch Architects**, a fictional architecture studio (Turkish default, English second). All people, projects, numbers and contact details in the demo are invented.
+A reusable website starter. The first instance is **Monarch Architects**, a fictional architecture studio (Turkish default, English second). All people, projects, numbers and contact details in the demo are invented.
 
 * Next.js 16 (App Router) + React 19 · Payload 3.94.1 embedded · Lexical rich text
 * Vercel · Neon Postgres (database) · Vercel Blob (media)
@@ -74,7 +74,6 @@ Payload crop/focal-point are off and Next’s image optimizer is **not** used. U
 3. **Blob**: Storage tab → create a **public** Blob store and connect it to the project (this adds `BLOB_READ_WRITE_TOKEN`).
 4. **Environment variables**: `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SITE_URL` (production origin). Optional: `PREVIEW_SECRET`.
 5. First deploy, then seed once from your machine with the production values (this **wipes content collections**): `DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… PAYLOAD_SECRET=… pnpm seed`, and redeploy (or edit any content) so cached pages pick up the data. Then create the first admin at `/admin`.
-6. Vercel Hobby is non-commercial; use Pro for a client site.
 
 ## Testing
 
