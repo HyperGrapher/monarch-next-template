@@ -4,6 +4,8 @@
  *   pnpm media:sizes             → only media that has no generated sizes yet
  *   ALL=1 pnpm media:sizes       → every image (e.g. after changing the widths or the quality)
  * (Environment variables, not --flags: `payload run` drops arguments that are not after a `--`.)
+ * PowerShell: `$env:DRY_RUN="1"; pnpm media:sizes`, then `Remove-Item Env:DRY_RUN` before the real run.
+ * Pending migrations (the size columns) must be applied first; the script checks and stops otherwise.
  *
  * Each original is downloaded and uploaded again through Payload, exactly like "Replace file" in the admin:
  * the new files are stored first, then the old ones are removed. Alt text, captions and every reference to
@@ -17,6 +19,7 @@ import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { imageWidths } from '../src/collections/Media'
 import type { Media } from '../src/payload-types'
+import { migrations } from '../src/migrations'
 
 const flag = (name: string) => process.env[name] === '1' || process.env[name] === 'true'
 const all = flag('ALL')
@@ -34,6 +37,16 @@ async function readOriginal(doc: Media): Promise<Buffer> {
 
 async function main() {
   const payload = await getPayload({ config: await config })
+
+  // The size columns come from a migration: refuse to run (with a clear message) until it is applied.
+  const { docs: applied } = await payload.find({ collection: 'payload-migrations', limit: 0, pagination: false, depth: 0, overrideAccess: true })
+  const done = new Set(applied.map((m) => m.name))
+  const pending = migrations.map((m) => m.name).filter((n) => !done.has(n))
+  if (pending.length) {
+    console.error(`[sizes] This database has ${pending.length} pending migration(s): ${pending.join(', ')}`)
+    console.error('[sizes] Apply them first (deploy to production, or run `pnpm migrate` with the same DATABASE_URL), then run this again.')
+    process.exit(1)
+  }
   const { docs } = await payload.find({ collection: 'media', limit: 0, pagination: false, depth: 0, overrideAccess: true })
   const smallest = Math.min(...imageWidths)
   const todo = docs.filter((d) => {
