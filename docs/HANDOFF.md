@@ -25,7 +25,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 1. **Admin on Vercel**: first-admin creation worked (user did it); admin edit → public page refresh, media upload, preview mode, and the contact form have not been verified on the live site by the agent (no admin login). Admin latency / Neon cold starts / function region not measured.
 2. **Single-language edition**: lives on the `single-language` branch (own README section, own migrations, clean URLs via `next.config.ts` rewrites). It is a separate product line: never run its migrations on this bilingual database. Keep it in sync by merging `main` into it.
 3. Not built: admin Live Preview iframe (only Draft Mode preview), translation-completeness indicator, Payload admin Turkish UI translation, email delivery for the contact form, WebSite/BreadcrumbList/Organization JSON-LD, rate limiting beyond honeypot/min-time, per-locale slugs (shared by design).
-4. Tests: `pnpm test:int` (vitest, Local API, real access rules) and `pnpm test:e2e` (Playwright against a production build) exist and pass; they need `TEST_DATABASE_URL` (throwaway DB; they refuse to run if it equals `DATABASE_URL`). Not run in CI (none configured). Contact-form email, rate limiting and a11y/perf are untested.
+4. Tests: `pnpm test:int` (vitest, Local API, real access rules) and `pnpm test:e2e` (Playwright against a production build) exist and pass; they need `TEST_DATABASE_URL` (throwaway DB; they refuse to run if it equals `DATABASE_URL`). CI: GitHub Actions (`.github/workflows/ci.yml`) runs tsc, lint, `test:int` and `test:e2e` on pushes to `main` only (Postgres service container, no secrets); the steps were replayed from a pristine clone locally, the first GitHub run is the real proof. `single-language` is not covered by CI. Contact-form email, rate limiting and a11y/perf are untested.
 5. Performance budgets (LCP, JS size) and accessibility audit (contrast, 200% zoom, screen reader) not measured; reduced motion is ported but only reviewed.
 6. Old `?type=` / `?category=` / `?page=` query URLs no longer filter (replaced by path segments).
 7. Vercel Hobby is non-commercial only; a client site needs Pro.
@@ -48,6 +48,6 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * `generate:types` / `migrate:create` without `BLOB_READ_WRITE_TOKEN` drop the Blob `_objectKey` column/type. Use a dummy `vercel_blob_rw_dummy_x` token when generating, and never commit a `payload-types.ts` that lost `_objectKey`.
 
 ## Suggested next steps
-1. Add CI (`test:int` + `test:e2e` against a Neon test branch).
+1. Check the first CI run on GitHub (Actions tab); consider branch protection / requiring the check before deploys if you want CI to gate Vercel.
 2. Live preview iframe, completeness indicator, extra structured data, email provider if wanted.
 3. Deploy the single-language edition (own Neon DB + Vercel project) when a client needs it.

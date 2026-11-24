@@ -92,6 +92,7 @@ The database helper requires PostgreSQL's `createdb` and `dropdb` commands on `P
 * `test:int` resets the test database (`payload run` drop + `payload migrate`) and uses the Local API with real access rules.
 * `test:e2e` runs against a **production build** (`tests/e2e/server.mjs`, port 3100, local disk media, no Blob token, no preview secret). It covers routing/locale behaviour, the home loader (including a failing hero image), contact API validation and honeypot, anonymous access, preview auth/open-redirect, admin sign-in, and that publishing an edit refreshes the cached public page while a saved draft does not.
 * The same suite covers both editions: URLs go through `tests/helpers/edition.ts`, and edition-specific tests skip themselves.
+* **CI** (`.github/workflows/ci.yml`): GitHub Actions runs type-check, lint, `test:int` and `test:e2e` on every push to **`main` only** (and on a manual run, which refuses to run off `main`). It needs no secrets: the tests use a throwaway Postgres service container. Failed runs upload `test-results/` and `playwright-report/` as an artifact. Other branches (including `single-language`) are not tested by CI; run the suite locally there.
 * First-time Playwright setup: `pnpm exec playwright install chromium` (the CI image already has it).
 
 ## Limitations (also in the handoff)
