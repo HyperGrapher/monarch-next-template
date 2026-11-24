@@ -55,14 +55,18 @@ await Promise.all(
  * Deprecated versions are skipped, except that a package whose current version is itself deprecated (old majors
  * are often flagged, e.g. eslint 9) may still move to a newer version of the same line.
  */
-function target(name, kind) {
+function target(name, kind, exactMajor = null) {
   const { version } = direct[name]
   const published = available[name]
   const allowDeprecated = kind === 'minor' && published[version] === true
   const candidates = Object.keys(published).filter(
     (v) =>
       (allowDeprecated || !published[v]) &&
-      (kind === 'minor' ? major(v) === major(version) && compare(v, version) > 0 : major(v) > major(version)),
+      (kind === 'minor'
+        ? major(v) === major(version) && compare(v, version) > 0
+        : exactMajor !== null
+          ? major(v) === exactMajor
+          : major(v) > major(version)),
   )
   return candidates.length ? candidates.reduce((a, b) => (compare(a, b) >= 0 ? a : b)) : null
 }
@@ -82,23 +86,40 @@ const other = { id: 'minor-other', kind: 'minor', label: 'minor/patch updates (o
 for (const [key, members] of units) {
   const isGroup = !key.startsWith('pkg:')
   const label = isGroup ? key : key.slice(4)
-  for (const kind of ['minor', 'major']) {
-    if (kind === 'major' && (flag('--no-major') || members.some((m) => config.ignoreMajor?.includes(m)))) continue
+  const currentMajor = major(direct[members[0]].version)
+  // 'minor' = newest version inside the current major. 'major' = newest version of the newest major, plus the
+  // next major step (e.g. 5 -> 6 when 7 is out) so that a too-new major does not block the step before it.
+  const steps = [{ kind: 'minor', exact: null }]
+  if (!flag('--no-major') && !members.some((m) => config.ignoreMajor?.includes(m))) {
+    steps.push({ kind: 'major', exact: null })
+    steps.push({ kind: 'major', exact: currentMajor + 1, intermediate: true })
+  }
+  for (const { kind, exact, intermediate } of steps) {
     // A lockstep group moves to the lowest version that all of its members have published.
-    const targets = members.map((m) => target(m, kind))
+    const targets = members.map((m) => target(m, kind, exact))
     if (targets.some((t) => t === null)) {
       // Nothing newer, or only a partial release so far (some members have a newer version, some don't): wait.
       if (isGroup && targets.some((t) => t !== null)) console.log(`wait ${label}: ${kind} release incomplete`)
       continue
     }
     const version = lowest(targets)
+    if (intermediate && major(version) === major(lowest(members.map((m) => target(m, 'major'))))) continue // same as the newest major
     const packages = Object.fromEntries(members.map((m) => [m, spec(m, version)]))
     const from = Object.fromEntries(members.map((m) => [m, spec(m, direct[m].version)]))
     if (kind === 'minor' && !isGroup) {
       Object.assign(other.packages, packages)
       Object.assign(other.from, from)
     } else {
-      candidates.push({ id: `${kind}-${label.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '')}`, kind, label: `${label} (${kind})`, packages, from })
+      const slug = label.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '')
+      candidates.push({
+        id: `${kind}-${slug}${intermediate ? `-v${major(version)}` : ''}`,
+        kind,
+        label: `${label} (${kind}${kind === 'major' ? ` ${major(version)}` : ''})`,
+        // Sort key: when several majors of the same package pass, the highest one wins.
+        rank: version,
+        packages,
+        from,
+      })
     }
   }
 }

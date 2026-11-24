@@ -6,7 +6,7 @@
  */
 import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { readJson, writeJson, setOutput } from './lib.mjs'
+import { readJson, writeJson, setOutput, compare as compareVersions } from './lib.mjs'
 
 const args = process.argv.slice(2)
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback)
@@ -31,7 +31,10 @@ const failed = plan.candidates.filter((c) => status(c) === 'failure')
 const merge = (list) => {
   const out = {}
   for (const kind of ['minor', 'major']) {
-    for (const c of list.filter((c) => c.kind === kind)) Object.assign(out, c.packages)
+    const ofKind = list.filter((c) => c.kind === kind)
+    // Ascending by version so that the highest passing major of a package is applied last and wins.
+    ofKind.sort((x, y) => compareVersions(x.rank ?? '0.0.0', y.rank ?? '0.0.0'))
+    for (const c of ofKind) Object.assign(out, c.packages)
   }
   return out
 }
