@@ -3,6 +3,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { buildConfig } from 'payload'
+import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { revalidateAfterChange, revalidateAfterDelete } from './lib/revalidate'
@@ -52,6 +53,8 @@ export default buildConfig({
     fallback: false,
   },
   editor: lexicalEditor(),
+  // Image dimensions and the responsive widths in collections/Media.ts.
+  sharp,
   secret: secret || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

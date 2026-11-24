@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defaultLocale, isLocale, localePath, locales } from '../../src/config/locales'
 import { getDictionary } from '../../src/lib/i18n/dictionary'
-import { localUrl } from '../../src/lib/media'
+import { img, localUrl, srcSetOf } from '../../src/lib/media'
 import { livePreview, requestOrigin } from '../../src/lib/preview'
 import { absoluteUrl } from '../../src/lib/seo'
 import { safeLocalPath } from '../../src/lib/links'
@@ -103,5 +103,27 @@ describe('live preview url', () => {
   })
   it('offers device breakpoints', () => {
     expect(livePreview(() => '/').breakpoints?.map((b) => b.name)).toEqual(['mobile', 'tablet', 'laptop'])
+  })
+})
+
+describe('responsive images', () => {
+  const doc = {
+    url: 'https://x.public.blob.vercel-storage.com/a.webp',
+    width: 2000,
+    sizes: {
+      w800: { url: 'https://x.public.blob.vercel-storage.com/a-800x500.webp', width: 800 },
+      w480: { url: 'https://x.public.blob.vercel-storage.com/a-480x300.webp', width: 480 },
+      w1600: { url: null, width: null },
+    },
+  } as any
+  it('lists generated widths in ascending order plus the original', () => {
+    expect(srcSetOf(doc)).toBe('https://x.public.blob.vercel-storage.com/a-480x300.webp 480w, https://x.public.blob.vercel-storage.com/a-800x500.webp 800w, https://x.public.blob.vercel-storage.com/a.webp 2000w')
+  })
+  it('has no srcset for media uploaded before sizes existed (falls back to the original)', () => {
+    expect(srcSetOf({ url: '/api/media/file/a.webp', width: 2000, sizes: { w480: { url: null } } } as any)).toBeUndefined()
+    expect(img({ ...doc, id: 1, alt: 'a', sizes: {} } as any)?.srcSet).toBeUndefined()
+  })
+  it('makes Payload-served sizes same-origin', () => {
+    expect(srcSetOf({ url: 'http://localhost:3000/api/media/file/a.webp', width: 900, sizes: { w480: { url: 'http://localhost:3000/api/media/file/a-480x1.webp', width: 480 } } } as any)).toBe('/api/media/file/a-480x1.webp 480w, /api/media/file/a.webp 900w')
   })
 })

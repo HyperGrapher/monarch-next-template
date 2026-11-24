@@ -37,7 +37,7 @@ export default async function ServicesPage({ params }: LocaleParams) {
                   <h2 className="t-statement link-draw m-0 group-hover:[background-size:100%_2px]">{s.title}</h2>
                   <p className="t-body mt-4 mb-0 max-w-[44ch]">{s.summary}</p>
                 </div>
-                {cover && <div className="md:col-span-4 md:col-start-9"><Photo image={cover} reveal={false} imgClassName="transition-transform duration-[1200ms] group-hover:scale-[1.03]" /></div>}
+                {cover && <div className="md:col-span-4 md:col-start-9"><Photo image={cover} sizes="(min-width: 768px) 33vw, 100vw" reveal={false} imgClassName="transition-transform duration-[1200ms] group-hover:scale-[1.03]" /></div>}
               </Link>
             </li>
           )

@@ -101,6 +101,17 @@ test.describe('home page', () => {
     await expect(page.locator('h1')).toHaveCount(1)
   })
 
+  test('content images offer responsive widths (srcset) and phones get a small one', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 })
+    const page = await ctx.newPage()
+    await page.goto(url('/projects'))
+    const img = page.locator('main img[srcset]').first()
+    await expect(img).toHaveAttribute('srcset', /480w/)
+    await img.scrollIntoViewIfNeeded()
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.currentSrc)).toMatch(/-(480|800)x\d+\.webp$/)
+    await ctx.close()
+  })
+
   test('no broken images on the home page', async ({ page }) => {
     const bad: string[] = []
     page.on('response', (r) => {

@@ -19,7 +19,7 @@ export function ProjectCard({ p, i, locale, className = '' }: { p: Project; i: n
   return (
     <article className={`${className} group`}>
       <Link href={localePath(locale, `/projects/${p.slug}`)} className="block" aria-label={p.title}>
-        {cover && <Photo image={cover} className="m-0" imgClassName="transition-transform duration-[1200ms] ease-[var(--ease-out-arch)] group-hover:scale-[1.03] group-focus-within:scale-[1.03]" />}
+        {cover && <Photo image={cover} sizes="(min-width: 768px) 66vw, 100vw" className="m-0" imgClassName="transition-transform duration-[1200ms] ease-[var(--ease-out-arch)] group-hover:scale-[1.03] group-focus-within:scale-[1.03]" />}
         <div data-reveal="up" className="mt-5 flex items-baseline gap-4">
           <span className="t-label text-ash">{String(i + 1).padStart(2, '0')}</span>
           <h3 className="t-heading link-draw m-0 group-hover:[background-size:100%_2px]">{p.title}</h3>

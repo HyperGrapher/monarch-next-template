@@ -36,10 +36,10 @@ export function Hero({ name, word, left, right, statement, caption, cta }: Props
       <canvas ref={canvas} aria-hidden="true" className="absolute inset-0 h-full w-full" style={{ display: fallback ? 'none' : 'block' }} />
 
       <div ref={leftEl} className="absolute top-16 left-[4%] h-[118vw] w-[60%] md:top-[4vw] md:left-[4.1%] md:h-[50.6vw] md:w-[59.8%]">
-        {fallback && <img src={left.src} alt={left.alt} className="h-full w-full object-cover" />}
+        {fallback && <img src={left.src} srcSet={left.srcSet} sizes="60vw" alt={left.alt} className="h-full w-full object-cover" />}
       </div>
       <div ref={rightEl} className="absolute top-16 left-[66%] h-[88vw] w-[30%] md:top-[3.85vw] md:left-[65.3%] md:h-[42.9vw] md:w-[29.2%]">
-        {fallback && <img src={right.src} alt={right.alt} className="h-full w-full object-cover" />}
+        {fallback && <img src={right.src} srcSet={right.srcSet} sizes="30vw" alt={right.alt} className="h-full w-full object-cover" />}
       </div>
       {fallback && (
         <div aria-hidden="true" className="absolute top-[calc(4rem+2vw)] left-[4%] text-[19vw] leading-none font-extrabold tracking-[-0.04em] text-ink md:top-[4vw] md:left-[4.1%] md:text-[15vw]">

@@ -67,7 +67,9 @@ Pages, services, projects, posts and the home page have drafts. Visitors only se
 `POST /api/contact` validates server-side, applies a honeypot and a minimum-time check, and stores the message via the Local API. The collection denies all public access (REST/GraphQL); only staff can read. **No e-mail is sent** — delivery is intentionally not implemented.
 
 ### Images
-Payload crop/focal-point are off and Next’s image optimizer is **not** used. Upload pre-optimised WebP/AVIF (≤ 2400 px). Dimensions are read from the file header on upload (`image-size`) so layouts reserve space. Files live in Vercel Blob and are served straight from its public CDN URL (`disablePayloadAccessControl`).
+Every upload (admin, API or seed) is resized **once, at upload time,** with `sharp` into 480/800/1200/1600 px WebP copies (`imageSizes` in `src/collections/Media.ts`; sizes larger than the original are skipped). They are stored next to the original in the same storage (Vercel Blob now; S3/R2 or disk work the same), and pages pick one via `srcset`/`sizes` (`src/lib/media.ts`, `Photo`). No per-request image service is involved, so this is host-independent; Next's image optimizer is not used. Crop/focal point are off: images keep their natural ratio. Upload originals at ≤ 2400 px.
+
+Media uploaded before the sizes existed has no `srcset` (it falls back to the original). Generate the missing sizes with `DRY_RUN=1 pnpm media:sizes` (preview) and then `pnpm media:sizes` against the environment's `DATABASE_URL` + `BLOB_READ_WRITE_TOKEN`; it re-uploads each original like the admin's *Replace file*. `ALL=1` regenerates every image (after changing widths or quality).
 
 ## Deploying to Vercel + Neon
 

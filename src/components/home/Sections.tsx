@@ -101,7 +101,7 @@ export function Archive({ data, locale }: L & { data: HomePage['archive'] }) {
           <ul className="m-0 mt-5 flex list-none snap-x gap-4 overflow-x-auto px-gutter pb-4 [scrollbar-color:var(--color-graphite)_transparent]" aria-label={t.home.fromArchive}>
             {strip.map((p, i) => (
               <li key={p.src} className="shrink-0 snap-start">
-                <img src={p.src} alt={p.alt} width={p.width} height={p.height} loading="lazy" className="h-[min(60vh,32rem)] w-auto bg-charcoal object-cover" style={{ aspectRatio: `${p.width} / ${p.height}` }} />
+                <img src={p.src} srcSet={p.srcSet} sizes={p.srcSet ? '(min-width: 768px) 40vw, 80vw' : undefined} alt={p.alt} width={p.width} height={p.height} loading="lazy" className="h-[min(60vh,32rem)] w-auto bg-charcoal object-cover" style={{ aspectRatio: `${p.width} / ${p.height}` }} />
                 <p className="t-label mt-3 mb-0 text-paper/70">
                   {t.home.archiveWord} {num(i + 1)}
                 </p>
@@ -154,7 +154,7 @@ export function Approach({ data, locale }: L & { data: HomePage['approach'] }) {
       <div className="mt-[clamp(3rem,8vw,8rem)] grid gap-12 md:grid-cols-12 md:gap-x-[clamp(1rem,2vw,2rem)]">
         {image && (
           <figure className="m-0 md:col-span-5">
-            <Photo image={image} className="bg-rule" />
+            <Photo image={image} sizes="(min-width: 768px) 42vw, 100vw" className="bg-rule" />
             {data.caption && <figcaption className="t-meta mt-3 text-graphite">{data.caption}</figcaption>}
           </figure>
         )}
@@ -221,7 +221,7 @@ export function Journal({ data, posts, locale }: L & { data: HomePage['journal']
           return (
             <li key={p.id} className="group">
               <Link href={localePath(locale, `/blog/${p.slug}`)} className="block">
-                {image && <Photo image={image} reveal={false} imgClassName="transition-transform duration-[1200ms] ease-[var(--ease-out-arch)] group-hover:scale-[1.03]" />}
+                {image && <Photo image={image} sizes="(min-width: 768px) 33vw, 100vw" reveal={false} imgClassName="transition-transform duration-[1200ms] ease-[var(--ease-out-arch)] group-hover:scale-[1.03]" />}
                 <p className="t-label mt-4 mb-0 text-ash">{formatDate(p.publishedAt, locale)}</p>
                 <h3 className="t-heading link-draw mt-2 mb-0 text-[clamp(1.25rem,1rem+1vw,1.75rem)] group-hover:[background-size:100%_2px]">{p.title}</h3>
               </Link>

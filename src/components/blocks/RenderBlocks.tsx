@@ -46,7 +46,7 @@ export async function RenderBlocks({ blocks, locale }: Props) {
                     </div>
                   ) : null}
                 </div>
-                {image && <div className={b.layout === 'split' ? 'md:col-span-7' : ''}><Photo image={image} eager /></div>}
+                {image && <div className={b.layout === 'split' ? 'md:col-span-7' : ''}><Photo image={image} sizes={b.layout === 'split' ? '(min-width: 768px) 58vw, 100vw' : '100vw'} eager /></div>}
               </div>
             </section>
           )
@@ -68,7 +68,7 @@ export async function RenderBlocks({ blocks, locale }: Props) {
           return (
             <section key={b.id} className={`px-gutter py-[clamp(3rem,7vw,7rem)] ${b.background === 'mist' ? 'bg-mist' : ''}`}>
               <div className="grid items-start gap-10 md:grid-cols-12 md:gap-x-[clamp(1rem,2vw,2rem)]">
-                {image && <div className={`md:col-span-6 ${left ? 'md:order-1' : 'md:order-2 md:col-start-7'}`}><Photo image={image} /></div>}
+                {image && <div className={`md:col-span-6 ${left ? 'md:order-1' : 'md:order-2 md:col-start-7'}`}><Photo image={image} sizes="(min-width: 768px) 50vw, 100vw" /></div>}
                 <div className={`md:col-span-5 ${left ? 'md:order-2 md:col-start-8' : 'md:order-1 md:col-start-1'}`}>
                   {heading(b.heading)}
                   <div className="mt-6" data-reveal="up"><RichText data={b.content} /></div>
@@ -86,7 +86,7 @@ export async function RenderBlocks({ blocks, locale }: Props) {
                 {items.map((g, i) => (
                   <li key={g.id} className={stag && i % 3 === 0 ? 'md:col-span-2' : stag && i % 3 === 2 ? 'md:mt-[8vw]' : ''}>
                     <figure className="m-0">
-                      <Photo image={g.image!} />
+                      <Photo image={g.image!} sizes={stag && i % 3 === 0 ? '100vw' : '(min-width: 768px) 50vw, 100vw'} />
                       {g.caption && <figcaption className="t-meta mt-3 text-graphite">{g.caption}</figcaption>}
                     </figure>
                   </li>

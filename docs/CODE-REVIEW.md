@@ -11,7 +11,7 @@ Step 1 status: fixed and verified locally on Postgres 16 — `tsc`, lint (0 erro
   - ⚠️ **Data migration `20261124_220901_publish_home_page` is required with this fix.** `pnpm seed` stored the home page's main row as `_status = 'draft'` (visitors still saw it because access ignored the status). Without the migration the new rule would hide the live home page. It marks the main row `published`, i.e. exactly what visitors see today; draft saves live only in `_home_page_v`, so nothing unpublished is exposed. The seed now writes `_status: 'published'` explicitly. `vercel-build` runs migrations before the build, so a normal deploy applies it.
 - [x] **Open redirect bypass in `/api/preview`.** `startsWith('/') && !startsWith('//')` lets `/\evil.com`, `/<TAB>/evil.com` and `/<LF>/evil.com` through; browsers resolve all of them to `evil.com`. Fix: `safeLocalPath()` in `src/lib/links.ts` resolves the path against a dummy origin, requires the same origin and refuses control characters/backslashes; unit + e2e tests added.
 - [x] **Home page loader can stay up forever.** `Shell` shows the loader on the home page until the WebGL hero calls `onReady`, but `Hero` is only rendered when both hero images resolve. A deleted/missing hero image left the page covered. Fix: without a hero the home page renders `<ReleaseLoader />` (`Shell.tsx`), which lifts the loader on mount. (No automated test: it needs a deleted hero image.)
-- [x] ~~**Vercel Preview deployments may migrate the production database.**~~ **Decision: kept as is** — Preview deployments share the production `DATABASE_URL`. Consequence to remember: `vercel-build` runs `pnpm migrate`, so **any pushed branch that contains a migration applies it to production** when its preview builds, before it is merged. Only push migrations that are safe for the code currently on `main` (additive columns, data fixes), and never push a branch with a destructive or incompatible migration.
+- [x] **Vercel Preview deployments may migrate the production database.** Preview deployments share the production `DATABASE_URL`, and `vercel-build` runs `pnpm migrate`. **Resolved:** Vercel → Settings → Build and Deployment → *Ignored Build Step* = "Only build production" (`if [ "$VERCEL_ENV" == "production" ]; then exit 1; else exit 0; fi`), so branches are not built or migrated anymore. Only `main` builds, and its migrations run on production as before.
 
 ## Step 2 — Correctness
 
@@ -28,8 +28,8 @@ Step 2 status: done. `tsc` (strict null checks), lint 0 errors, `test:int` 46 pa
 
 ## Step 3 — Performance
 
-- [ ] **No responsive images.** Phones download ≤ 2400 px originals. Use `next/image` (Blob in `remotePatterns`) or generate sizes at upload; add `fetchPriority="high"` to the LCP image.
-- [ ] **Home loader delays LCP.** The prerendered HTML is hidden until images + shader are ready. Render the static (fallback) hero first and upgrade to WebGL; drop the loader.
+- [x] **No responsive images.** Phones download ≤ 2400 px originals. Use `next/image` (Blob in `remotePatterns`) or generate sizes at upload; add `fetchPriority="high"` to the LCP image. **Done:** sharp generates 480/800/1200/1600 WebP at upload (any host, any storage adapter), `srcset`/`sizes` on every content image, `fetchPriority="high"` on eager images; migration `responsive_image_sizes` (additive); `pnpm media:sizes` backfills existing uploads. Tests: upload through the API gets all sizes; a phone-width page loads a small width.
+- [ ] ~~**Home loader delays LCP.**~~ **Decision: keep the loader in the template** (decide per client site). The prerendered HTML is hidden until images + shader are ready. Render the static (fallback) hero first and upgrade to WebGL; drop the loader.
 - [ ] **Wrap queries in React `cache()`.** `getSettings` runs up to 4× per render (layout + page + both `generateMetadata`); landings run twice.
 - [ ] **Over-fetching.** `depth: 2` everywhere; project page loads all projects at depth 2 just for the "next" link; related posts load full rich text. Use `select` / lower depth.
 - [ ] **Revalidation purges the whole site on every save**, including draft saves and new uploads. Purge only when `doc._status` or `previousDoc._status` is `published`.
@@ -46,7 +46,7 @@ Step 2 status: done. `tsc` (strict null checks), lint 0 errors, `test:int` 46 pa
 
 - [ ] Cloudflare leftovers: `public/_headers`, OpenNext / `.dev.vars` lines and duplicate `/media` in `.gitignore`.
 - [ ] Template leftovers: `src/app/my-route/route.ts` (public), `.npmrc` (`legacy-peer-deps` is ignored by pnpm), `.yarnrc`, `images.localPatterns` in `next.config.ts`, unused `CONTACT_EMAIL_*` vars in `.env.example`, `package.json` description.
-- [ ] `Media` `beforeChange` dimension hook + `image-size` look redundant (Payload 3.94 probes dimensions without sharp) — verify with one upload, then remove.
+- [x] `Media` `beforeChange` dimension hook + `image-size` look redundant (Payload 3.94 probes dimensions without sharp) — verify with one upload, then remove. **Removed** (sharp now reads dimensions; the upload e2e test checks `width`).
 - [ ] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`.
 - [ ] Validate `social[].url` and `mapUrl` as `https?://` URLs.
 - [ ] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1).

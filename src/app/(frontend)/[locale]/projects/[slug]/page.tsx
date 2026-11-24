@@ -63,7 +63,7 @@ export default async function ProjectPage({ params }: LocaleSlugParams) {
           <ul className="m-0 grid list-none gap-x-[clamp(1rem,2vw,2rem)] gap-y-10 p-0 md:grid-cols-2">
             {gallery.map((g) => (
               <li key={g.id}>
-                <figure className="m-0"><Photo image={g.image!} />{g.caption && <figcaption className="t-meta mt-3 text-graphite">{g.caption}</figcaption>}</figure>
+                <figure className="m-0"><Photo image={g.image!} sizes="(min-width: 768px) 50vw, 100vw" />{g.caption && <figcaption className="t-meta mt-3 text-graphite">{g.caption}</figcaption>}</figure>
               </li>
             ))}
           </ul>

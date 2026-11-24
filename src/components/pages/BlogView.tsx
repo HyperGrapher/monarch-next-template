@@ -37,7 +37,7 @@ export async function BlogView({ locale, category, page = 1 }: { locale: Locale;
             return (
               <li key={p.id} className="group">
                 <Link href={localePath(locale, `/blog/${p.slug}`)} className="block">
-                  {image && <Photo image={image} reveal={false} imgClassName="transition-transform duration-[1200ms] group-hover:scale-[1.03]" />}
+                  {image && <Photo image={image} sizes="(min-width: 768px) 33vw, 100vw" reveal={false} imgClassName="transition-transform duration-[1200ms] group-hover:scale-[1.03]" />}
                   <p className="t-label mt-4 mb-0 text-ash">{formatDate(p.publishedAt, locale)}{cat?.name ? ` · ${cat.name}` : ''}</p>
                   <h2 className="t-heading link-draw mt-2 mb-0 text-[clamp(1.25rem,1rem+1vw,1.75rem)] group-hover:[background-size:100%_2px]">{p.title}</h2>
                   <p className="t-body mt-3 mb-0">{p.excerpt}</p>

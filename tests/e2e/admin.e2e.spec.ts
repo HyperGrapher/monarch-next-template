@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { expect, test } from '@playwright/test'
 import { defaultLocale, url } from '../helpers/edition'
 
@@ -110,6 +112,29 @@ test.describe('admin and cache refresh', () => {
 
     // Still a draft for visitors.
     expect((await request.get(url(`/${slug}`), { headers: {} })).status()).toBe(404)
+  })
+
+  test('an image uploaded through the admin API gets responsive sizes (no seed involved)', async ({ request }) => {
+    const headers = { Authorization: `JWT ${token}` }
+    const buffer = readFileSync(path.resolve('seed/photos/arch-01.webp'))
+    const res = await request.post('/api/media', {
+      headers,
+      multipart: {
+        file: { name: `upload-e2e-${Date.now()}.webp`, mimeType: 'image/webp', buffer },
+        _payload: JSON.stringify({ alt: 'Upload test' }),
+      },
+    })
+    expect(res.status()).toBe(201)
+    const doc = (await res.json()).doc
+    expect(doc.width).toBe(2000)
+    for (const name of ['w480', 'w800', 'w1200', 'w1600']) {
+      const size = doc.sizes[name]
+      expect(size.url, name).toBeTruthy()
+      expect(size.mimeType).toBe('image/webp')
+      const file = await request.get(size.url)
+      expect(file.status(), size.url).toBe(200)
+    }
+    expect(doc.sizes.w480.width).toBe(480)
   })
 })
 
