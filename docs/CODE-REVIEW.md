@@ -11,7 +11,7 @@ Step 1 status: fixed and verified locally on Postgres 16 — `tsc`, lint (0 erro
   - ⚠️ **Data migration `20261124_220901_publish_home_page` is required with this fix.** `pnpm seed` stored the home page's main row as `_status = 'draft'` (visitors still saw it because access ignored the status). Without the migration the new rule would hide the live home page. It marks the main row `published`, i.e. exactly what visitors see today; draft saves live only in `_home_page_v`, so nothing unpublished is exposed. The seed now writes `_status: 'published'` explicitly. `vercel-build` runs migrations before the build, so a normal deploy applies it.
 - [x] **Open redirect bypass in `/api/preview`.** `startsWith('/') && !startsWith('//')` lets `/\evil.com`, `/<TAB>/evil.com` and `/<LF>/evil.com` through; browsers resolve all of them to `evil.com`. Fix: `safeLocalPath()` in `src/lib/links.ts` resolves the path against a dummy origin, requires the same origin and refuses control characters/backslashes; unit + e2e tests added.
 - [x] **Home page loader can stay up forever.** `Shell` shows the loader on the home page until the WebGL hero calls `onReady`, but `Hero` is only rendered when both hero images resolve. A deleted/missing hero image left the page covered. Fix: without a hero the home page renders `<ReleaseLoader />` (`Shell.tsx`), which lifts the loader on mount. (No automated test: it needs a deleted hero image.)
-- [ ] **Vercel Preview deployments may migrate the production database.** `vercel-build` runs `pnpm migrate`. If `DATABASE_URL` is also set for the *Preview* environment, every pushed branch (including `single-language` and the dependency bot's fallback branch) migrates production. Check Vercel → Settings → Environment Variables: scope `DATABASE_URL` to *Production* only, or use the Neon ↔ Vercel integration (a database branch per preview). *(Cannot be fixed in code; must be checked in the Vercel dashboard.)*
+- [x] ~~**Vercel Preview deployments may migrate the production database.**~~ **Decision: kept as is** — Preview deployments share the production `DATABASE_URL`. Consequence to remember: `vercel-build` runs `pnpm migrate`, so **any pushed branch that contains a migration applies it to production** when its preview builds, before it is merged. Only push migrations that are safe for the code currently on `main` (additive columns, data fixes), and never push a branch with a destructive or incompatible migration.
 
 ## Step 2 — Correctness
 
@@ -46,6 +46,15 @@ Step 1 status: fixed and verified locally on Postgres 16 — `tsc`, lint (0 erro
 - [ ] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`.
 - [ ] Validate `social[].url` and `mapUrl` as `https?://` URLs.
 - [ ] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1).
+
+## Merged: `live-admin-preview` (reviewed)
+
+- [x] Merged into this branch; conflicts resolved (HomePage now has live preview + autosave **and** the published-only read rule). Migration order: `live_preview_autosave` (additive `autosave` columns) → `publish_home_page`; the latter's schema snapshot was refreshed so the drift test stays green. Full suites pass, including the Live Preview UI test.
+- Notes from the review (no action needed now):
+  - `requestOrigin()` trusts `x-forwarded-host`. Fine: only signed-in editors render the admin and those responses are not cached.
+  - Autosave every 1 s writes a draft version per editor per second to Neon; raise `interval` (e.g. 2000) if admin feels slow on cold starts.
+  - "Save draft" (non-autosave) still purges the whole cache — covered by the Step 3 revalidation item.
+  - The landing globals have Live Preview but no drafts: the iframe only changes after *Save*, which publishes immediately. Consider drafts there too if editors expect to try changes safely.
 
 ## Accessibility, i18n, UX
 

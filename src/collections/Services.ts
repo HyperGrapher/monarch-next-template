@@ -3,7 +3,7 @@ import { publishedOrStaff, staffOnly } from '../access'
 import { blocks } from '../blocks'
 import { seoField } from '../fields/seo'
 import { slugField } from '../fields/slug'
-import { previewUrl } from '../lib/preview'
+import { autosaveDrafts, livePreview, previewUrl } from '../lib/preview'
 
 export const Services: CollectionConfig = {
   slug: 'services',
@@ -13,9 +13,10 @@ export const Services: CollectionConfig = {
     group: 'Portfolio',
     defaultColumns: ['title', 'order', 'featured', '_status', 'updatedAt'],
     preview: (doc, { locale }) => previewUrl(`/services/${doc.slug}`, locale),
+    livePreview: livePreview((d) => (d.slug ? `/services/${d.slug}` : null)),
   },
   defaultSort: 'order',
-  versions: { drafts: true, maxPerDoc: 10 },
+  versions: { drafts: autosaveDrafts, maxPerDoc: 10 },
   access: { read: publishedOrStaff, create: staffOnly, update: staffOnly, delete: staffOnly },
   fields: [
     {

@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { publishedOrStaff, staffOnly } from '../access'
 import { seoField } from '../fields/seo'
 import { slugField } from '../fields/slug'
-import { previewUrl } from '../lib/preview'
+import { autosaveDrafts, livePreview, previewUrl } from '../lib/preview'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -12,9 +12,10 @@ export const Posts: CollectionConfig = {
     group: 'Content',
     defaultColumns: ['title', 'categories', 'publishedAt', '_status'],
     preview: (doc, { locale }) => previewUrl(`/blog/${doc.slug}`, locale),
+    livePreview: livePreview((d) => (d.slug ? `/blog/${d.slug}` : null)),
   },
   defaultSort: '-publishedAt',
-  versions: { drafts: true, maxPerDoc: 10 },
+  versions: { drafts: autosaveDrafts, maxPerDoc: 10 },
   access: { read: publishedOrStaff, create: staffOnly, update: staffOnly, delete: staffOnly },
   fields: [
     {

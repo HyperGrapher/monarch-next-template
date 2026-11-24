@@ -3,7 +3,7 @@ import { publishedOrStaff, staffOnly } from '../access'
 import { blocks } from '../blocks'
 import { seoField } from '../fields/seo'
 import { slugField } from '../fields/slug'
-import { previewUrl } from '../lib/preview'
+import { autosaveDrafts, livePreview, previewUrl } from '../lib/preview'
 
 export const projectTypes = ['cultural', 'residential', 'housing', 'public', 'commercial', 'interiors'] as const
 
@@ -16,9 +16,10 @@ export const Projects: CollectionConfig = {
     defaultColumns: ['title', 'type', 'year', 'featured', '_status', 'updatedAt'],
     description: 'All projects in this demo are fictional.',
     preview: (doc, { locale }) => previewUrl(`/projects/${doc.slug}`, locale),
+    livePreview: livePreview((d) => (d.slug ? `/projects/${d.slug}` : null)),
   },
   defaultSort: 'order',
-  versions: { drafts: true, maxPerDoc: 10 },
+  versions: { drafts: autosaveDrafts, maxPerDoc: 10 },
   access: { read: publishedOrStaff, create: staffOnly, update: staffOnly, delete: staffOnly },
   fields: [
     {

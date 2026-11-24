@@ -6734,6 +6734,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -6907,6 +6913,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_pages_v_autosave_idx": {
+          "name": "_pages_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -13698,6 +13719,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -13871,6 +13898,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_services_v_autosave_idx": {
+          "name": "_services_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -21128,6 +21170,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -21301,6 +21349,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_projects_v_autosave_idx": {
+          "name": "_projects_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -22182,6 +22245,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -22355,6 +22424,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_posts_v_autosave_idx": {
+          "name": "_posts_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -26988,6 +27072,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -27131,6 +27221,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_home_page_v_autosave_idx": {
+          "name": "_home_page_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

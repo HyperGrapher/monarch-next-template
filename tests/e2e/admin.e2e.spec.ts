@@ -79,4 +79,37 @@ test.describe('admin and cache refresh', () => {
     expect(await home.text()).not.toContain(marker)
     await anon.dispose()
   })
+
+  test('admin Live Preview shows the draft in an iframe and follows edits (autosave)', async ({ page, request }) => {
+    const headers = { Authorization: `JWT ${token}` }
+    const slug = `live-preview-e2e-${Date.now()}`
+    const created = await request.post(`/api/pages?locale=${defaultLocale}`, { headers, data: { title: 'Live Preview Original', slug, _status: 'draft', layout: [] } })
+    expect(created.status()).toBe(201)
+    const id = (await created.json()).doc.id
+
+    // Draft is invisible to visitors, but visible in the admin's live preview.
+    expect((await request.get(url(`/${slug}`), { headers: {} })).status()).toBe(404)
+
+    await page.goto('/admin/login')
+    await page.fill('#field-email', admin.email)
+    await page.fill('#field-password', admin.password)
+    await page.click('button[type="submit"]')
+    await page.waitForURL('**/admin')
+
+    await page.goto(`/admin/collections/pages/${id}?locale=${defaultLocale}`)
+    await page.locator('#live-preview-toggler').click()
+    const frame = page.frameLocator('iframe#live-preview-iframe')
+    await expect(frame.locator('h1').first()).toContainText('Live Preview Original', { timeout: 30_000 })
+    // The "draft preview" banner is hidden inside the iframe.
+    await expect(frame.locator('[data-preview-banner]')).toBeHidden()
+
+    // Typing changes the title; autosave saves a draft and the iframe refreshes without a manual save.
+    const title = page.locator('#field-title')
+    await title.fill('Live Preview Edited')
+    await expect(frame.locator('h1').first()).toContainText('Live Preview Edited', { timeout: 30_000 })
+
+    // Still a draft for visitors.
+    expect((await request.get(url(`/${slug}`), { headers: {} })).status()).toBe(404)
+  })
 })
+
