@@ -35,6 +35,7 @@ pnpm dev                        # http://localhost:3000  (redirects / → /tr)
 | `generate:types`, `generate:importmap` | Payload types, admin import map |
 | `build`, `vercel-build` | Next build; migrate + build (what Vercel runs) |
 | `lint` | ESLint |
+| `test-db:create` | Create a local throwaway Postgres database and print `TEST_DATABASE_URL` |
 | `test:int`, `test:e2e`, `test` | Vitest integration tests; Playwright end-to-end tests; both (see Testing) |
 
 **Schema changes ship as migrations** (`pnpm payload migrate:create <name>`); dev auto-push is disabled (`push: false`). Drizzle may ask “created or renamed?” interactively — in a non-interactive shell, answer via a TTY.
@@ -77,14 +78,17 @@ Payload crop/focal-point are off and Next’s image optimizer is **not** used. U
 
 ## Testing
 
-The tests **create and delete data**, and your `.env` normally points at the real database. So they only run against an explicit throwaway database, and refuse to start if `TEST_DATABASE_URL` equals `DATABASE_URL`:
+The tests **create and delete data**, and your `.env` or `.env.local` may point at the real database. So they only run against an explicit throwaway database, and refuse to start if `TEST_DATABASE_URL` equals `DATABASE_URL`:
 
 ```bash
-# a local Postgres, or a disposable Neon branch (never production)
-export TEST_DATABASE_URL=postgres://user:pass@localhost:5432/monarch_test
+# Create a local throwaway DB (password entry is hidden), then copy the printed line into .env.local
+pnpm test-db:create
 pnpm test:int     # ~10 s: access control, drafts, translations (no fallback), revalidation hook, dictionary parity, URL helpers
 pnpm test:e2e     # ~5 min: resets + migrates + seeds the test DB, builds, starts the app, then drives Chromium
 ```
+
+The database helper requires PostgreSQL's `createdb` and `dropdb` commands on `PATH`. The database name is always explicit. The reusable PowerShell script accepts `-Name`, `-Delete`, `-EnvVariable`, `-HostName`, `-Port`, and `-UserName`; it only allows localhost/loopback hosts. For example, run `New-PostgresDatabase.ps1 -Name another_project_test` to create a database, or add `-Delete` to delete that exact database. Deletion does not force-close active connections or allow deleting `postgres`, `template0`, or `template1`. The tests load `.env.local` before `.env`, so the printed line works in either file.
+
 * `test:int` resets the test database (`payload run` drop + `payload migrate`) and uses the Local API with real access rules.
 * `test:e2e` runs against a **production build** (`tests/e2e/server.mjs`, port 3100, local disk media, no Blob token, no preview secret). It covers routing/locale behaviour, the home loader (including a failing hero image), contact API validation and honeypot, anonymous access, preview auth/open-redirect, admin sign-in, and that publishing an edit refreshes the cached public page while a saved draft does not.
 * The same suite covers both editions: URLs go through `tests/helpers/edition.ts`, and edition-specific tests skip themselves.

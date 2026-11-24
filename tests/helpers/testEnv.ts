@@ -3,7 +3,10 @@
  * (production) database — so they only ever run against an explicit TEST_DATABASE_URL.
  *   TEST_DATABASE_URL=postgres://user:pass@localhost:5432/monarch_test pnpm test
  */
-import 'dotenv/config'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '.env.local' })
+dotenv.config({ path: '.env' })
 
 const testUrl = process.env.TEST_DATABASE_URL
 if (!testUrl) {

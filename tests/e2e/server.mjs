@@ -1,7 +1,10 @@
 // Starts the app for e2e against a FRESH TEST database: reset → migrate → seed → build → start.
 // Never touches DATABASE_URL (see tests/helpers/testEnv.ts for the guard).
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import { execSync, spawn } from 'node:child_process'
+
+dotenv.config({ path: '.env.local' })
+dotenv.config({ path: '.env' })
 
 const test = process.env.TEST_DATABASE_URL
 if (!test) throw new Error('TEST_DATABASE_URL is not set (throwaway Postgres only, never production).')
