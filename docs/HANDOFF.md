@@ -16,7 +16,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * CMS: Users (admin/editor), Media, Pages, Services, Projects, Posts, Categories, ContactSubmissions; globals SiteSettings, HomePage, landings, ContactPage; 10 blocks; localization `tr` (default) + `en`, `fallback:false`; drafts/versions.
 * Public site: `[locale]` routes (home with WebGL hero, services, projects, journal, pages, contact, 404/error, language switcher, hreflang/canonical/OG, sitemap, robots, JSON-LD). Checked earlier in a real browser at 1440×900 and 390×844.
 * Caching: all public routes are prerendered (ISR). Content changes call `revalidatePath('/', 'layout')` from `afterChange`/`afterDelete` hooks (`src/lib/revalidate.ts`). Filters/pagination are path segments (`/projects/type/x`, `/blog/category/x/page/2`) so they stay static.
-* Postgres: fresh migrations in `src/migrations` (`initial`, `blob_object_key`). Verified locally on Postgres 16: migrate, seed, build, start, edit → cached page refreshes.
+* Postgres: fresh migrations in `src/migrations` (`initial`, `blob_object_key`, `publish_home_page` — data only, see `docs/CODE-REVIEW.md`). Verified locally on Postgres 16: migrate, seed, build, start, edit → cached page refreshes.
 * Live check (Vercel): pages `x-vercel-cache: PRERENDER` (~0.3–0.5 s), images from the Blob CDN, `/tr/yok` 404, `/api/users` 403 anonymous, sitemap/robots OK, 6 projects in the API.
 * Security (checked on the Cloudflare build, same code): anonymous cannot read/create submissions or list users; registration closes after the first user; editor cannot create/delete users or self-promote; draft content is 404 publicly; `/api/preview` needs a session and rejects `//evil.com`; honeypot returns silent success.
 * Fixed after the move: `projects.status` renamed `buildStatus` (collided with Payload's `_status` Postgres enum); OG image URL for Blob images was `https://site.comhttps://…` — now uses `absoluteUrl()` in `src/lib/seo.ts` (blog JSON-LD too).
@@ -51,6 +51,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * `generate:types` / `migrate:create` without `BLOB_READ_WRITE_TOKEN` drop the Blob `_objectKey` column/type. Use a dummy `vercel_blob_rw_dummy_x` token when generating, and never commit a `payload-types.ts` that lost `_objectKey`.
 
 ## Suggested next steps
+0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; step 1 is done).
 1. Check the first CI run on GitHub (Actions tab); consider branch protection / requiring the check before deploys if you want CI to gate Vercel.
 2. Live preview iframe, completeness indicator, extra structured data, email provider if wanted.
 3. Deploy the single-language edition (own Neon DB + Vercel project) when a client needs it.

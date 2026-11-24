@@ -83,7 +83,7 @@ async function main() {
   // Globals
   for (const l of locales) {
     await payload.updateGlobal({ slug: 'site-settings', locale: l, data: scope(c.siteSettings(l, ids), 'site') as any })
-    await payload.updateGlobal({ slug: 'home-page', locale: l, data: scope(c.homePage(l, ids, projIds, svcIds), 'home') as any, draft: false })
+    await payload.updateGlobal({ slug: 'home-page', locale: l, data: { ...scope(c.homePage(l, ids, projIds, svcIds), 'home'), _status: 'published' } as any, draft: false })
     const lands = c.landings(l)
     for (const slug of Object.keys(lands) as (keyof typeof lands)[]) await payload.updateGlobal({ slug, locale: l, data: scope(lands[slug], String(slug)) as any })
   }

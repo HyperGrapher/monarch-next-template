@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { staffOnly } from '../access'
+import { publishedOrStaff, staffOnly } from '../access'
 import { seoField } from '../fields/seo'
 import { previewUrl } from '../lib/preview'
 
@@ -7,7 +7,8 @@ export const HomePage: GlobalConfig = {
   slug: 'home-page',
   label: 'Home page',
   admin: { group: 'Content', preview: (_doc, { locale }) => previewUrl('/', locale) },
-  access: { read: () => true, update: staffOnly },
+  // Visitors only ever read the published version (otherwise ?draft=true would return the latest draft).
+  access: { read: publishedOrStaff, update: staffOnly },
   versions: { drafts: true, max: 10 },
   fields: [
     {

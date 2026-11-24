@@ -12,7 +12,7 @@ export const adminOnly: Access = ({ req }) => isAdmin(req.user)
 export const staffOnly: Access = ({ req }) => isStaff(req.user)
 export const adminOnlyField: FieldAccess = ({ req }) => isAdmin(req.user)
 
-/** Public sees published documents only; signed-in staff see drafts too. */
+/** Public sees published documents only; signed-in staff see drafts too. Works for collections and globals. */
 export const publishedOrStaff: Access = ({ req }) => {
   if (isStaff(req.user)) return true
   return { _status: { equals: 'published' } }

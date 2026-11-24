@@ -10,6 +10,13 @@ const ReadyContext = createContext<() => void>(() => {})
 /** The hero calls this once its first WebGL frame is drawn (lifts the loader). */
 export const useReady = () => useContext(ReadyContext)
 
+/** Rendered on the home page when there is no shader hero, so the loader never waits for one. */
+export function ReleaseLoader(): null {
+  const onReady = useReady()
+  useEffect(() => onReady(), [onReady])
+  return null
+}
+
 export function Shell({ locale, loadingLabel, children }: { locale: Locale; loadingLabel: string; children: React.ReactNode }) {
   const pathname = usePathname()
   const isHome = pathname === localePath(locale, '/')

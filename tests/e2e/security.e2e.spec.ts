@@ -20,6 +20,10 @@ test.describe('anonymous access', () => {
   test('preview rejects open redirects', async ({ request }) => {
     expect((await request.get('/api/preview?path=//evil.com', { maxRedirects: 0 })).status()).toBe(400)
     expect((await request.get('/api/preview?path=https://evil.com', { maxRedirects: 0 })).status()).toBe(400)
+    // Browsers treat these as "//evil.com" (backslash; tab/newline are stripped by the URL parser).
+    for (const p of ['/%5Cevil.com', '/%09/evil.com', '/%0A/evil.com']) {
+      expect((await request.get(`/api/preview?path=${p}`, { maxRedirects: 0 })).status(), p).toBe(400)
+    }
   })
   test('a drafts-only listing is not exposed publicly', async ({ request }) => {
     const res = await request.get('/api/projects?draft=true&limit=100')

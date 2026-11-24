@@ -3,6 +3,7 @@ import { defaultLocale, isLocale, localePath, locales } from '../../src/config/l
 import { getDictionary } from '../../src/lib/i18n/dictionary'
 import { localUrl } from '../../src/lib/media'
 import { absoluteUrl } from '../../src/lib/seo'
+import { safeLocalPath } from '../../src/lib/links'
 import { projectTypes } from '../../src/collections/Projects'
 import { isMultilingual, secondLocale } from '../helpers/edition'
 
@@ -61,5 +62,17 @@ describe('media + seo URL helpers', () => {
     const blob = 'https://abc.public.blob.vercel-storage.com/a.webp'
     expect(absoluteUrl(blob)).toBe(blob)
     expect(absoluteUrl('/api/media/file/a.webp')).toBe('http://localhost:3000/api/media/file/a.webp')
+  })
+})
+
+describe('safeLocalPath (preview redirect target)', () => {
+  it('keeps local paths with query and hash', () => {
+    expect(safeLocalPath('/tr/projects?x=1#a')).toBe('/tr/projects?x=1#a')
+    expect(safeLocalPath('/')).toBe('/')
+  })
+  it('rejects anything a browser would send to another host', () => {
+    for (const p of ['//evil.com', '/\\evil.com', '/\t/evil.com', '/\n/evil.com', '/\r/evil.com', 'https://evil.com', 'evil.com', '', '\\\\evil.com']) {
+      expect(safeLocalPath(p), JSON.stringify(p)).toBeNull()
+    }
   })
 })

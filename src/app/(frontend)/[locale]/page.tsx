@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Hero } from '../../../components/home/Hero'
+import { ReleaseLoader } from '../../../components/layout/Shell'
 import { Approach, Archive, ContactCta, Intro, Journal, Services, Studio, Work } from '../../../components/home/Sections'
 import { brandConfig } from '../../../config/brand'
 import { isLocale } from '../../../config/locales'
@@ -39,8 +40,11 @@ export default async function HomeRoute({ params }: LocaleParams) {
 
   return (
     <>
-      {left && right && (
+      {left && right ? (
         <Hero name={name} word={settings?.wordmark ?? name.toUpperCase()} left={left} right={right} statement={home.hero?.statement ?? ''} caption={home.hero?.caption ?? ''} cta={home.hero?.ctaLabel ?? ''} />
+      ) : (
+        // No hero images (e.g. a deleted media file): the loader waits for the hero, so release it here.
+        <ReleaseLoader />
       )}
       <Intro data={home.intro} locale={locale} />
       <Work data={home.work} projects={projects} locale={locale} />

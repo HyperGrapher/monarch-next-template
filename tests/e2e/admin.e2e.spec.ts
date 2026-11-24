@@ -58,4 +58,25 @@ test.describe('admin and cache refresh', () => {
     await new Promise((r) => setTimeout(r, 1500))
     expect(await (await request.get(url('/projects'))).text()).not.toContain(marker)
   })
+
+  test('a draft of a global (home page) is not readable anonymously', async ({ request, playwright, baseURL }) => {
+    const headers = { Authorization: `JWT ${token}` }
+    const marker = `GLOBAL-DRAFT-${Date.now()}`
+    const patch = await request.post(`/api/globals/home-page?locale=${defaultLocale}&draft=true`, { headers, data: { hero: { statement: marker } } })
+    expect(patch.status()).toBe(200)
+    // Staff can see the draft…
+    expect(JSON.stringify(await (await request.get(`/api/globals/home-page?locale=${defaultLocale}&draft=true`, { headers })).json())).toContain(marker)
+    // …visitors cannot, even when asking for it.
+    const anon = await playwright.request.newContext({ baseURL })
+    for (const q of ['', '&draft=true']) {
+      const res = await anon.get(`/api/globals/home-page?locale=${defaultLocale}${q}`)
+      expect(res.status()).toBe(200)
+      expect(await res.text()).not.toContain(marker)
+    }
+    // The public home page still renders the published content.
+    const home = await anon.get(url('/'))
+    expect(home.status()).toBe(200)
+    expect(await home.text()).not.toContain(marker)
+    await anon.dispose()
+  })
 })
