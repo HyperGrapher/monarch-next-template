@@ -1,0 +1,15 @@
+{
+  "_comment": "Settings for the automated dependency updates (.github/workflows/dependency-updates.yml).",
+  "_lockstep": "Packages that must always share one version. They are updated together, to the lowest version all of them have published.",
+  "lockstep": {
+    "payload": ["payload", "@payloadcms/*"],
+    "next": ["next", "eslint-config-next"],
+    "react": ["react", "react-dom"],
+    "react-types": ["@types/react", "@types/react-dom"],
+    "tailwind": ["tailwindcss", "@tailwindcss/postcss"]
+  },
+  "_ignore": "Never touched at all (exact names).",
+  "ignore": [],
+  "_ignoreMajor": "Minor/patch updates only. @types/node must follow the Node.js version used in CI/Vercel (22), not the newest major.",
+  "ignoreMajor": ["@types/node"]
+}

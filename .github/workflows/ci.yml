@@ -2,6 +2,7 @@ name: CI
 
 # Runs on pushes to main only (plus a manual run, which still refuses to run off main).
 # Needs no secrets: tests use a throwaway Postgres service container, never a real database.
+# The steps live in .github/actions/{setup,verify} and are shared with the dependency-update workflow.
 on:
   push:
     branches: [main]
@@ -41,40 +42,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+      - uses: ./.github/actions/setup
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-workspace
 
-      - name: Type check
-        run: pnpm exec tsc --noEmit
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Integration tests
-        run: pnpm test:int
-
-      - name: Cache Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'next.config.ts') }}
-          restore-keys: |
-            next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-
-      - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: End-to-end tests (builds and starts the app on the test database)
-        run: pnpm test:e2e
+      - uses: ./.github/actions/verify
 
       - name: Upload test artifacts
         if: failure()
