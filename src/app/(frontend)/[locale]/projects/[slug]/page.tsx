@@ -7,7 +7,7 @@ import { PageHeader } from '../../../../../components/ui/PageHeader'
 import { isLocale, localePath, locales } from '../../../../../config/locales'
 import { getDictionary } from '../../../../../lib/i18n/dictionary'
 import { img } from '../../../../../lib/media'
-import { getProject, getProjects, getSettings, getSlugs, getTranslatedLocales } from '../../../../../lib/queries'
+import { getProject, getProjectNav, getSettings, getSlugs, getTranslatedLocales } from '../../../../../lib/queries'
 import type { LocaleSlugParams } from '../../../../../lib/route'
 import { buildMetadata } from '../../../../../lib/seo'
 import { formatArea } from '../../../../../lib/text'
@@ -31,7 +31,7 @@ export default async function ProjectPage({ params }: LocaleSlugParams) {
   const t = getDictionary(locale)
   const p = await getProject(slug, { locale })
   if (!p) notFound()
-  const all = await getProjects({ locale })
+  const all = await getProjectNav({ locale })
   const idx = all.findIndex((x) => x.id === p.id)
   const next = all.length > 1 ? all[(idx + 1) % all.length] : null
   const cover = img(p.coverImage)

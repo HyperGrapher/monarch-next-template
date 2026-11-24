@@ -47,12 +47,12 @@ describe.skipIf(!isMultilingual)('translations (no silent fallback)', () => {
 })
 
 describe('cache revalidation hook', () => {
-  it('does not throw outside a Next request (seed, scripts, tests)', () => {
-    expect(() => (revalidateAfterChange as any)({ doc: { id: 1 }, context: {} })).not.toThrow()
+  it('does not throw outside a Next request (seed, scripts, tests)', async () => {
+    await expect((revalidateAfterChange as any)({ doc: { id: 1 }, context: {} })).resolves.toBeTruthy()
   })
-  it('returns the document unchanged', () => {
+  it('returns the document unchanged', async () => {
     const doc = { id: 7 }
-    expect((revalidateAfterChange as any)({ doc, context: {} })).toBe(doc)
+    expect(await (revalidateAfterChange as any)({ doc, context: {} })).toBe(doc)
   })
 })
 

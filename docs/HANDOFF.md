@@ -55,7 +55,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * `payload.find({ pagination: false })` still applies the default `limit` (10) in the Postgres adapter: pass `limit: 0` for "all".
 
 ## Suggested next steps
-0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; steps 1–2 are done).
+0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; steps 1–3 are done).
 1. Check the first CI run on GitHub (Actions tab); consider branch protection / requiring the check before deploys if you want CI to gate Vercel.
 2. Completeness indicator, extra structured data, email provider if wanted.
 3. A single-language edition, if a client needs one: edit `src/config/locales.ts`, add clean-URL rewrites, generate migrations on its own Neon DB + Vercel project.
