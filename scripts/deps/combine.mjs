@@ -22,6 +22,8 @@ if (existsSync(resultsDir)) {
 }
 
 const status = (c) => results[c.id] ?? 'missing'
+const missing = plan.candidates.filter((c) => !results[c.id])
+for (const c of missing) console.log(`::warning::No test result was found for ${c.id}; it is not applied.`)
 const passed = plan.candidates.filter((c) => status(c) === 'success')
 const failed = plan.candidates.filter((c) => status(c) === 'failure')
 
