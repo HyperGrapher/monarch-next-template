@@ -31,3 +31,16 @@ test.describe('anonymous access', () => {
     expect(docs.every((d: any) => d._status === 'published')).toBe(true)
   })
 })
+
+test.describe('security headers', () => {
+  for (const path of [url('/'), '/admin/login', '/api/pages']) {
+    test(`${path} sends them`, async ({ request }) => {
+      const h = (await request.get(path, { maxRedirects: 0 })).headers()
+      expect(h['x-content-type-options']).toBe('nosniff')
+      expect(h['x-frame-options']).toBe('SAMEORIGIN')
+      expect(h['content-security-policy']).toContain("frame-ancestors 'self'")
+      expect(h['referrer-policy']).toBe('strict-origin-when-cross-origin')
+      expect(h['strict-transport-security']).toContain('max-age=')
+    })
+  }
+})

@@ -39,10 +39,12 @@ Step 3 status: done (loader kept by decision). `tsc`, lint 0 errors, `test:int` 
 
 ## Step 4 — Deployment / process
 
-- [ ] CI runs only on `main` after the push, so Vercel deploys before tests finish; the dependency bot pushes majors straight to `main`. Run CI on pull requests and let Vercel wait for checks.
-- [ ] First-admin registration is open on every fresh deploy until someone registers. Add a deploy-checklist step or an env-gated setup token.
-- [ ] Security headers: HSTS, `frame-ancestors`/`X-Frame-Options`, `Referrer-Policy` (`next.config.ts` `headers()`).
-- [ ] Payload `csrf` / `serverURL` set to the production origin.
+- [x] CI runs only on `main` after the push, so Vercel deploys before tests finish; the dependency bot pushes majors straight to `main`. Run CI on pull requests and let Vercel wait for checks. **Done:** `ci.yml` also runs on pull requests (one run per PR, newer pushes cancel older ones). To enforce it, mark the `test` check as required for `main` in GitHub branch protection; the dependency bot already falls back to a PR with auto-merge when `main` is protected.
+- [x] First-admin registration is open on every fresh deploy until someone registers. Add a deploy-checklist step or an env-gated setup token. **Decision: no setup token;** README (setup + deploy steps) now says to create the admin right after the first deploy.
+- [x] Security headers: HSTS, `frame-ancestors`/`X-Frame-Options`, `Referrer-Policy` (`next.config.ts` `headers()`). **Done** for every route (site, admin, API), plus `nosniff` and `Permissions-Policy`; no full CSP on purpose. e2e checks them; Live Preview (same-origin iframe) still works.
+- [x] Payload `csrf` / `serverURL` set to the production origin. **Decision: left empty.** Payload accepts the session cookie from any `Origin` only while the list is empty; the cookie is `SameSite=Lax`, so browsers do not send it on cross-site writes. A list would lock editors out on any unlisted hostname (`www.` vs bare domain). How to enable it is in the README (Security).
+
+Step 4 status: done. `tsc`, `test:int` 53 passed, `test:e2e` 43 passed.
 
 ## Step 5 — Cleanup
 
