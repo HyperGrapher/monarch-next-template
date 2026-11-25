@@ -611,7 +611,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"snapshot" boolean,
   	"published_locale" "enum__pages_v_published_locale",
-  	"latest" boolean
+  	"latest" boolean,
+  	"autosave" boolean
   );
   
   CREATE TABLE "_pages_v_locales" (
@@ -1160,7 +1161,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"snapshot" boolean,
   	"published_locale" "enum__services_v_published_locale",
-  	"latest" boolean
+  	"latest" boolean,
+  	"autosave" boolean
   );
   
   CREATE TABLE "_services_v_locales" (
@@ -1747,7 +1749,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"snapshot" boolean,
   	"published_locale" "enum__projects_v_published_locale",
-  	"latest" boolean
+  	"latest" boolean,
+  	"autosave" boolean
   );
   
   CREATE TABLE "_projects_v_locales" (
@@ -1818,7 +1821,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"snapshot" boolean,
   	"published_locale" "enum__posts_v_published_locale",
-  	"latest" boolean
+  	"latest" boolean,
+  	"autosave" boolean
   );
   
   CREATE TABLE "_posts_v_locales" (
@@ -1858,6 +1862,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TABLE "media" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"credit" varchar,
+  	"_objectkey" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"url" varchar,
@@ -1866,7 +1871,33 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"mime_type" varchar,
   	"filesize" numeric,
   	"width" numeric,
-  	"height" numeric
+  	"height" numeric,
+  	"focal_x" numeric,
+  	"focal_y" numeric,
+  	"sizes_w480_url" varchar,
+  	"sizes_w480_width" numeric,
+  	"sizes_w480_height" numeric,
+  	"sizes_w480_mime_type" varchar,
+  	"sizes_w480_filesize" numeric,
+  	"sizes_w480_filename" varchar,
+  	"sizes_w800_url" varchar,
+  	"sizes_w800_width" numeric,
+  	"sizes_w800_height" numeric,
+  	"sizes_w800_mime_type" varchar,
+  	"sizes_w800_filesize" numeric,
+  	"sizes_w800_filename" varchar,
+  	"sizes_w1200_url" varchar,
+  	"sizes_w1200_width" numeric,
+  	"sizes_w1200_height" numeric,
+  	"sizes_w1200_mime_type" varchar,
+  	"sizes_w1200_filesize" numeric,
+  	"sizes_w1200_filename" varchar,
+  	"sizes_w1600_url" varchar,
+  	"sizes_w1600_width" numeric,
+  	"sizes_w1600_height" numeric,
+  	"sizes_w1600_mime_type" varchar,
+  	"sizes_w1600_filesize" numeric,
+  	"sizes_w1600_filename" varchar
   );
   
   CREATE TABLE "media_locales" (
@@ -2203,7 +2234,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"snapshot" boolean,
   	"published_locale" "enum__home_page_v_published_locale",
-  	"latest" boolean
+  	"latest" boolean,
+  	"autosave" boolean
   );
   
   CREATE TABLE "_home_page_v_locales" (
@@ -2803,6 +2835,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_pages_v_snapshot_idx" ON "_pages_v" USING btree ("snapshot");
   CREATE INDEX "_pages_v_published_locale_idx" ON "_pages_v" USING btree ("published_locale");
   CREATE INDEX "_pages_v_latest_idx" ON "_pages_v" USING btree ("latest");
+  CREATE INDEX "_pages_v_autosave_idx" ON "_pages_v" USING btree ("autosave");
   CREATE UNIQUE INDEX "_pages_v_locales_locale_parent_id_unique" ON "_pages_v_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_pages_v_locales_parent_id_idx" ON "_pages_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_pages_v_rels_order_idx" ON "_pages_v_rels" USING btree ("order");
@@ -2977,6 +3010,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_services_v_snapshot_idx" ON "_services_v" USING btree ("snapshot");
   CREATE INDEX "_services_v_published_locale_idx" ON "_services_v" USING btree ("published_locale");
   CREATE INDEX "_services_v_latest_idx" ON "_services_v" USING btree ("latest");
+  CREATE INDEX "_services_v_autosave_idx" ON "_services_v" USING btree ("autosave");
   CREATE UNIQUE INDEX "_services_v_locales_locale_parent_id_unique" ON "_services_v_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_services_v_locales_parent_id_idx" ON "_services_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_services_v_rels_order_idx" ON "_services_v_rels" USING btree ("order");
@@ -3161,6 +3195,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_projects_v_snapshot_idx" ON "_projects_v" USING btree ("snapshot");
   CREATE INDEX "_projects_v_published_locale_idx" ON "_projects_v" USING btree ("published_locale");
   CREATE INDEX "_projects_v_latest_idx" ON "_projects_v" USING btree ("latest");
+  CREATE INDEX "_projects_v_autosave_idx" ON "_projects_v" USING btree ("autosave");
   CREATE UNIQUE INDEX "_projects_v_locales_locale_parent_id_unique" ON "_projects_v_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_projects_v_locales_parent_id_idx" ON "_projects_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_projects_v_rels_order_idx" ON "_projects_v_rels" USING btree ("order");
@@ -3192,6 +3227,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_posts_v_snapshot_idx" ON "_posts_v" USING btree ("snapshot");
   CREATE INDEX "_posts_v_published_locale_idx" ON "_posts_v" USING btree ("published_locale");
   CREATE INDEX "_posts_v_latest_idx" ON "_posts_v" USING btree ("latest");
+  CREATE INDEX "_posts_v_autosave_idx" ON "_posts_v" USING btree ("autosave");
   CREATE UNIQUE INDEX "_posts_v_locales_locale_parent_id_unique" ON "_posts_v_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_posts_v_locales_parent_id_idx" ON "_posts_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_posts_v_rels_order_idx" ON "_posts_v_rels" USING btree ("order");
@@ -3206,6 +3242,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "media_updated_at_idx" ON "media" USING btree ("updated_at");
   CREATE INDEX "media_created_at_idx" ON "media" USING btree ("created_at");
   CREATE UNIQUE INDEX "media_filename_idx" ON "media" USING btree ("filename");
+  CREATE INDEX "media_sizes_w480_sizes_w480_filename_idx" ON "media" USING btree ("sizes_w480_filename");
+  CREATE INDEX "media_sizes_w800_sizes_w800_filename_idx" ON "media" USING btree ("sizes_w800_filename");
+  CREATE INDEX "media_sizes_w1200_sizes_w1200_filename_idx" ON "media" USING btree ("sizes_w1200_filename");
+  CREATE INDEX "media_sizes_w1600_sizes_w1600_filename_idx" ON "media" USING btree ("sizes_w1600_filename");
   CREATE UNIQUE INDEX "media_locales_locale_parent_id_unique" ON "media_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "media_locales_parent_id_idx" ON "media_locales" USING btree ("_parent_id");
   CREATE INDEX "contact_submissions_updated_at_idx" ON "contact_submissions" USING btree ("updated_at");
@@ -3309,6 +3349,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "_home_page_v_snapshot_idx" ON "_home_page_v" USING btree ("snapshot");
   CREATE INDEX "_home_page_v_published_locale_idx" ON "_home_page_v" USING btree ("published_locale");
   CREATE INDEX "_home_page_v_latest_idx" ON "_home_page_v" USING btree ("latest");
+  CREATE INDEX "_home_page_v_autosave_idx" ON "_home_page_v" USING btree ("autosave");
   CREATE UNIQUE INDEX "_home_page_v_locales_locale_parent_id_unique" ON "_home_page_v_locales" USING btree ("_locale","_parent_id");
   CREATE INDEX "_home_page_v_locales_parent_id_idx" ON "_home_page_v_locales" USING btree ("_parent_id");
   CREATE INDEX "_home_page_v_rels_order_idx" ON "_home_page_v_rels" USING btree ("order");
