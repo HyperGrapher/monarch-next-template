@@ -1,9 +1,12 @@
 name: CI
 
-# Runs on pushes to main only (plus a manual run, which still refuses to run off main).
-# Needs no secrets: tests use a throwaway Postgres service container, never a real database.
-# The steps live in .github/actions/{setup,verify} and are shared with the dependency-update workflow.
+# Runs on pull requests (so a change is tested BEFORE it reaches main, which Vercel deploys to production),
+# on pushes to main, and manually. Needs no secrets: tests use a throwaway Postgres service container,
+# never a real database. The steps live in .github/actions/{setup,verify} and are shared with the
+# dependency-update workflow. To block merging untested code, mark the "test" check as required in
+# GitHub → Settings → Branches (branch protection for main).
 on:
+  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
@@ -12,12 +15,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-main
+  # One run per PR / branch; a newer push cancels the older run.
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

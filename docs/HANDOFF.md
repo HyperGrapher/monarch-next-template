@@ -1,6 +1,6 @@
 # Handoff — Monarch Architects starter
 
-Branch: `main` (deployed to Vercel: https://monarch-next-template.vercel.app). Stack: Next 16.4.6 · React 19.2.9 · Payload 3.94.1 · **Neon Postgres** (`@payloadcms/db-postgres`) · **Vercel Blob** (`@payloadcms/storage-vercel-blob`). Source brief: [`monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo.
+Branch: `main` (deployed to Vercel: https://monarch-next-template.vercel.app). Stack (versions in `package.json`): Next 16 · React 19 · Payload 3 · **Neon Postgres** (`@payloadcms/db-postgres`) · **Vercel Blob** (`@payloadcms/storage-vercel-blob`). Source brief: [`monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo.
 
 History: the site first ran on Cloudflare Workers + D1 + R2 (OpenNext). The Free plan's 10 ms CPU limit caused Error 1102 on the admin and uncached routes even after ISR caching, so it was moved to Vercel + Neon + Blob. The last Cloudflare version is commit `8c75093`.
 
@@ -25,7 +25,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 1. **Admin on Vercel**: first-admin creation worked (user did it); admin edit → public page refresh, media upload, preview mode, and the contact form have not been verified on the live site by the agent (no admin login). Admin latency / Neon cold starts / function region not measured.
 2. **Single-language edition**: the `single-language` branch is being retired (all branches except `main` will be deleted). The code stays edition-aware (`src/config/locales.ts`, `tests/helpers/edition.ts`), so a single-language site can be recreated by editing `locales.ts`, the clean-URL rewrites and new migrations. Vercel Preview deployments would share the production database, so the project's *Ignored Build Step* is set to **only build production**: pushing a branch no longer runs its migrations on production.
 3. Not built: translation-completeness indicator, Payload admin Turkish UI translation, email delivery for the contact form, WebSite/BreadcrumbList/Organization JSON-LD, rate limiting beyond honeypot/min-time, per-locale slugs (shared by design).
-4. Tests: `pnpm test:int` (vitest, Local API, real access rules) and `pnpm test:e2e` (Playwright against a production build) exist and pass; they need `TEST_DATABASE_URL` (throwaway DB; they refuse to run if it equals `DATABASE_URL`). CI: GitHub Actions (`.github/workflows/ci.yml`) runs tsc, lint, `test:int` and `test:e2e` on pushes to `main` only (Postgres service container, no secrets); the steps were replayed from a pristine clone locally, the first GitHub run is the real proof. A schema-drift test (`tests/int/schema.int.spec.ts`) fails if the schema changes without a committed migration. Contact-form email, rate limiting and a11y/perf are untested.
+4. Tests: `pnpm test:int` (vitest, Local API, real access rules) and `pnpm test:e2e` (Playwright against a production build) exist and pass; they need `TEST_DATABASE_URL` (throwaway DB; they refuse to run if it equals `DATABASE_URL`). CI: GitHub Actions (`.github/workflows/ci.yml`) runs tsc, lint, `test:int` and `test:e2e` on pull requests and pushes to `main` (Postgres service container, no secrets); the steps were replayed from a pristine clone locally, the first GitHub run is the real proof. A schema-drift test (`tests/int/schema.int.spec.ts`) fails if the schema changes without a committed migration. Contact-form email, rate limiting and a11y/perf are untested.
 5. Performance budgets (LCP, JS size) and accessibility audit (contrast, 200% zoom, screen reader) not measured; reduced motion is ported but only reviewed.
 6. Old `?type=` / `?category=` / `?page=` query URLs no longer filter (replaced by path segments).
 7. Vercel Hobby is non-commercial only; a client site needs Pro.
@@ -55,7 +55,7 @@ Without `BLOB_READ_WRITE_TOKEN`, uploads/seed images go to `./media` (gitignored
 * `payload.find({ pagination: false })` still applies the default `limit` (10) in the Postgres adapter: pass `limit: 0` for "all".
 
 ## Suggested next steps
-0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; steps 1–2 are done).
-1. Check the first CI run on GitHub (Actions tab); consider branch protection / requiring the check before deploys if you want CI to gate Vercel.
+0. Work through `docs/CODE-REVIEW.md` (full review with a checklist; steps 1–4 are done).
+1. Check the first CI run on GitHub (Actions tab); work through PRs and mark the `test` check as required for `main` (branch protection) so untested code cannot reach production.
 2. Completeness indicator, extra structured data, email provider if wanted.
 3. A single-language edition, if a client needs one: edit `src/config/locales.ts`, add clean-URL rewrites, generate migrations on its own Neon DB + Vercel project.

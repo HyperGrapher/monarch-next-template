@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { isMultilingual, url } from '../helpers/edition'
+import { isMultilingual, secondLocale, url } from '../helpers/edition'
 
 test.describe('locales and routing', () => {
   test('the home page renders content with <html lang>, a title and exactly one h1', async ({ page }) => {
@@ -69,6 +69,10 @@ test.describe('locales and routing', () => {
     expect((await request.get(url('/blog/category/nope'))).status()).toBe(404)
     expect((await request.get(url('/blog/page/99'))).status()).toBe(404)
     expect((await request.get(url('/blog/page/1'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/design'))).status()).toBe(200)
+    expect((await request.get(url('/blog/category/design/page/99'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/nope/page/2'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/design/page/x'))).status()).toBe(404)
   })
 
   test('unknown pages return a real 404 with the styled not-found page', async ({ page }) => {
@@ -99,6 +103,35 @@ test.describe('home page', () => {
     await page.goto(url('/'))
     await expect(page.locator('#loader')).toBeHidden({ timeout: 20_000 })
     await expect(page.locator('h1')).toHaveCount(1)
+  })
+
+  test('filtered and paginated listings have their own titles', async ({ page }) => {
+    await page.goto(url('/projects'))
+    const all = await page.title()
+    await page.goto(url('/projects/type/housing'))
+    const housing = await page.title()
+    expect(housing).not.toBe(all)
+    await page.goto(url('/blog'))
+    const blog = await page.title()
+    await page.goto(url('/blog/category/design'))
+    expect(await page.title()).not.toBe(blog)
+  })
+
+  test('404 and UI labels follow the URL language', async ({ page }) => {
+    test.skip(!isMultilingual, 'multilingual only')
+    const res = await page.goto(url('/no-such-page', secondLocale))
+    expect(res?.status()).toBe(404)
+    await expect(page.locator('h1')).toHaveText('Page not found')
+    await expect(page.locator('#loader output')).toHaveAttribute('aria-label', 'Loading')
+    await page.goto(url('/no-such-page'))
+    await expect(page.locator('h1')).toHaveText('Sayfa bulunamadı')
+  })
+
+  test('has a favicon', async ({ page, request }) => {
+    await page.goto(url('/'))
+    const href = await page.locator('link[rel="icon"]').first().getAttribute('href')
+    expect(href).toBeTruthy()
+    expect((await request.get(href!)).status()).toBe(200)
   })
 
   test('content images offer responsive widths (srcset) and phones get a small one', async ({ browser }) => {

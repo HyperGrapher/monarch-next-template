@@ -30,26 +30,32 @@ Step 2 status: done. `tsc` (strict null checks), lint 0 errors, `test:int` 46 pa
 
 - [x] **No responsive images.** Phones download ≤ 2400 px originals. Use `next/image` (Blob in `remotePatterns`) or generate sizes at upload; add `fetchPriority="high"` to the LCP image. **Done:** sharp generates 480/800/1200/1600 WebP at upload (any host, any storage adapter), `srcset`/`sizes` on every content image, `fetchPriority="high"` on eager images; migration `responsive_image_sizes` (additive); `pnpm media:sizes` backfills existing uploads. Tests: upload through the API gets all sizes; a phone-width page loads a small width.
 - [ ] ~~**Home loader delays LCP.**~~ **Decision: keep the loader in the template** (decide per client site). The prerendered HTML is hidden until images + shader are ready. Render the static (fallback) hero first and upgrade to WebGL; drop the loader.
-- [ ] **Wrap queries in React `cache()`.** `getSettings` runs up to 4× per render (layout + page + both `generateMetadata`); landings run twice.
-- [ ] **Over-fetching.** `depth: 2` everywhere; project page loads all projects at depth 2 just for the "next" link; related posts load full rich text. Use `select` / lower depth.
-- [ ] **Revalidation purges the whole site on every save**, including draft saves and new uploads. Purge only when `doc._status` or `previousDoc._status` is `published`.
-- [ ] Minor: `ScrollTop` sets state on every scroll event (rAF-throttle); sitemap queries run sequentially (`Promise.all`); consider `attachDatabasePool` (`@vercel/functions`) for Fluid compute; disable GraphQL if unused.
+- [x] **Wrap queries in React `cache()`.** `getSettings` runs up to 4× per render (layout + page + both `generateMetadata`); landings run twice. **Done:** every query in `src/lib/queries` is `cache()`d, keyed by primitives (cache compares arguments by identity, so the old `{ locale }` objects would never hit).
+- [x] **Over-fetching.** `depth: 2` everywhere; project page loads all projects at depth 2 just for the "next" link; related posts load full rich text. Use `select` / lower depth. **Done:** lists select card fields only (depth 1); related documents are populated with card fields only (`populate`), so a project on the home page no longer drags in its layout/gallery/SEO; "next project" uses a title+slug query; related posts are depth 0.
+- [x] **Revalidation purges the whole site on every save**, including draft saves and new uploads. **Done** (`changesPublicContent()` in `src/lib/revalidate.ts`): purge on publish, unpublish, delete, and any save of something without drafts; not on draft saves, autosaves or new uploads. "Save draft" and "Unpublish" both report `_status: 'draft'`, so in that one case the main document is re-read inside the transaction. Tested with real saves in `tests/int/revalidate-rules.int.spec.ts`.
+- [x] Minor: `ScrollTop` sets state on every scroll event (rAF-throttle); sitemap queries run sequentially (`Promise.all`); consider `attachDatabasePool` (`@vercel/functions`) for Fluid compute; disable GraphQL if unused. **Done:** ScrollTop updates once per frame; sitemap queries run in parallel (step 2). **Skipped on purpose:** `attachDatabasePool` (Vercel-specific; the template should stay host-neutral) and disabling GraphQL (harmless, may be wanted by a client).
+
+Step 3 status: done (loader kept by decision). `tsc`, lint 0 errors, `test:int` 53 passed, `test:e2e` 40 passed.
 
 ## Step 4 — Deployment / process
 
-- [ ] CI runs only on `main` after the push, so Vercel deploys before tests finish; the dependency bot pushes majors straight to `main`. Run CI on pull requests and let Vercel wait for checks.
-- [ ] First-admin registration is open on every fresh deploy until someone registers. Add a deploy-checklist step or an env-gated setup token.
-- [ ] Security headers: HSTS, `frame-ancestors`/`X-Frame-Options`, `Referrer-Policy` (`next.config.ts` `headers()`).
-- [ ] Payload `csrf` / `serverURL` set to the production origin.
+- [x] CI runs only on `main` after the push, so Vercel deploys before tests finish; the dependency bot pushes majors straight to `main`. Run CI on pull requests and let Vercel wait for checks. **Done:** `ci.yml` also runs on pull requests (one run per PR, newer pushes cancel older ones). To enforce it, mark the `test` check as required for `main` in GitHub branch protection; the dependency bot already falls back to a PR with auto-merge when `main` is protected.
+- [x] First-admin registration is open on every fresh deploy until someone registers. Add a deploy-checklist step or an env-gated setup token. **Decision: no setup token;** README (setup + deploy steps) now says to create the admin right after the first deploy.
+- [x] Security headers: HSTS, `frame-ancestors`/`X-Frame-Options`, `Referrer-Policy` (`next.config.ts` `headers()`). **Done** for every route (site, admin, API), plus `nosniff` and `Permissions-Policy`; no full CSP on purpose. e2e checks them; Live Preview (same-origin iframe) still works.
+- [x] Payload `csrf` / `serverURL` set to the production origin. **Decision: left empty.** Payload accepts the session cookie from any `Origin` only while the list is empty; the cookie is `SameSite=Lax`, so browsers do not send it on cross-site writes. A list would lock editors out on any unlisted hostname (`www.` vs bare domain). How to enable it is in the README (Security).
+
+Step 4 status: done. `tsc`, `test:int` 53 passed, `test:e2e` 43 passed.
 
 ## Step 5 — Cleanup
 
-- [ ] Cloudflare leftovers: `public/_headers`, OpenNext / `.dev.vars` lines and duplicate `/media` in `.gitignore`.
-- [ ] Template leftovers: `src/app/my-route/route.ts` (public), `.npmrc` (`legacy-peer-deps` is ignored by pnpm), `.yarnrc`, `images.localPatterns` in `next.config.ts`, unused `CONTACT_EMAIL_*` vars in `.env.example`, `package.json` description.
+- [x] Cloudflare leftovers: `public/_headers`, OpenNext / `.dev.vars` lines and duplicate `/media` in `.gitignore`. **Removed.**
+- [x] Template leftovers: `src/app/my-route/route.ts` (public), `.npmrc` (`legacy-peer-deps` is ignored by pnpm), `.yarnrc`, `images.localPatterns` in `next.config.ts`, unused `CONTACT_EMAIL_*` vars in `.env.example`, `package.json` description. **All removed / fixed.**
 - [x] `Media` `beforeChange` dimension hook + `image-size` look redundant (Payload 3.94 probes dimensions without sharp) — verify with one upload, then remove. **Removed** (sharp now reads dimensions; the upload e2e test checks `width`).
-- [ ] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`.
-- [ ] Validate `social[].url` and `mapUrl` as `https?://` URLs.
-- [ ] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1).
+- [x] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`. **Done:** both routes re-export `src/components/pages/BlogPagedRoute.tsx`; e2e covers the category variant's 200/404s.
+- [x] Validate `social[].url` and `mapUrl` as `https?://` URLs. **Done:** `httpUrl` in `src/fields/url.ts`, unit-tested.
+- [x] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1). **Done:** the docs point to `package.json` instead of pinning numbers the dependency bot keeps changing.
+
+Step 5 status: done. `tsc`, lint 0 errors, `test:int` 55 passed, `test:e2e` 43 passed.
 
 ## Merged: `live-admin-preview` (reviewed)
 
@@ -62,10 +68,10 @@ Step 2 status: done. `tsc` (strict null checks), lint 0 errors, `test:int` 46 pa
 
 ## Accessibility, i18n, UX
 
-- [ ] `error.tsx` / `not-found.tsx` always use the default locale (`useParams()` in the error page).
-- [ ] Hard-coded English: `loadingLabel="Loading"`, pagination `aria-label="Pagination"`.
-- [ ] `<dd>` before `<dt>` in the stats block and home Archive (invalid `dl`).
-- [ ] Contact form: `autoComplete="phone"` / `"message"` are invalid (`tel`, none); phone `maxLength` 120 vs server 40.
-- [ ] Type-filter and blog pagination pages share one title/description (duplicate titles).
-- [ ] No favicon (`src/app/icon.*`).
-- [ ] Privacy / Cookies / Imprint are plain text; the contact form collects personal data — a KVKK privacy notice linked from the form is normally needed.
+- [x] `error.tsx` / `not-found.tsx` always use the default locale (`useParams()` in the error page). **Done:** both read the locale from the URL (`src/lib/i18n/useLocale.ts`); e2e checks the English 404.
+- [x] Hard-coded English: `loadingLabel="Loading"`, pagination `aria-label="Pagination"`. **Done:** dictionary keys `loading`, `blog.pagination`.
+- [x] `<dd>` before `<dt>` in the stats block and home Archive (invalid `dl`). **Done:** `dt` first in the markup, `flex-col-reverse` keeps the number on top visually.
+- [x] Contact form: `autoComplete="phone"` / `"message"` are invalid (`tel`, none); phone `maxLength` 120 vs server 40. **Done:** `name`/`email`/`tel`, none on the message; input limits match the server (120/200/40).
+- [x] Type-filter and blog pagination pages share one title/description (duplicate titles). **Done:** "Projects — Housing", "Journal — Design — Page 2" (`withSuffix()` in `src/lib/seo.ts`); category pages use the category description; e2e checks it.
+- [x] No favicon (`src/app/icon.*`). **Done:** `src/app/icon.svg` from the logo mark (replace per client).
+- [ ] **Open — needs your decision.** Privacy / Cookies / Imprint are plain text; the contact form collects personal data — a KVKK privacy notice linked from the form is normally needed.

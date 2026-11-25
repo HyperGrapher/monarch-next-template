@@ -8,15 +8,23 @@ export function ScrollTop({ label }: { label: string }) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => {
+    // At most one update per frame (scroll events can fire many times per frame), and the
+    // progress is rounded so React skips re-renders that would not change a pixel.
+    let raf = 0
+    const update = () => {
+      raf = 0
       const max = document.documentElement.scrollHeight - window.innerHeight
-      setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0)
+      setProgress(max > 0 ? Math.round(Math.min(1, window.scrollY / max) * 500) / 500 : 0)
       setShow(window.scrollY > window.innerHeight)
     }
-    onScroll()
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+    update()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     return () => {
+      cancelAnimationFrame(raf)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }

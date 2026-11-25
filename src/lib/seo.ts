@@ -47,3 +47,12 @@ export function buildMetadata(opts: {
     twitter: { card: image ? 'summary_large_image' : 'summary', title: title ?? undefined, description },
   }
 }
+
+/**
+ * Title for a filtered / paginated view of a listing ("Projects — Housing", "Journal — Page 2"), so those
+ * URLs do not all share one title. Uses the landing's SEO title if it has one.
+ */
+export const withSuffix = (landing: { title?: string | null; seo?: Seo } | null | undefined, suffix?: string | null) => {
+  const base = landing?.seo?.title || landing?.title
+  return { title: base && suffix ? `${base} — ${suffix}` : base, seo: landing?.seo ? { ...landing.seo, title: null } : landing?.seo }
+}

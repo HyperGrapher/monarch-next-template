@@ -69,11 +69,12 @@ export function Archive({ data, locale }: L & { data: HomePage['archive'] }) {
         {data.numbers?.length ? (
           <dl data-reveal="stagger" className="m-0 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4">
             {data.numbers.map((n) => (
-              <div key={n.id}>
+              // dt before dd (valid <dl>); flex-col-reverse keeps the number visually on top.
+              <div key={n.id} className="flex flex-col-reverse">
+                <dt className="t-label mt-3 text-paper/70">{n.label}</dt>
                 <dd data-count={n.value} className="t-display m-0 block tabular-nums">
                   {n.value}
                 </dd>
-                <dt className="t-label mt-3 text-paper/70">{n.label}</dt>
               </div>
             ))}
           </dl>

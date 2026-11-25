@@ -5,6 +5,7 @@ import { img, localUrl, srcSetOf } from '../../src/lib/media'
 import { livePreview, requestOrigin } from '../../src/lib/preview'
 import { absoluteUrl } from '../../src/lib/seo'
 import { safeLocalPath } from '../../src/lib/links'
+import { httpUrl } from '../../src/fields/url'
 import { projectTypes } from '../../src/collections/Projects'
 import { isMultilingual, secondLocale } from '../helpers/edition'
 
@@ -125,5 +126,18 @@ describe('responsive images', () => {
   })
   it('makes Payload-served sizes same-origin', () => {
     expect(srcSetOf({ url: 'http://localhost:3000/api/media/file/a.webp', width: 900, sizes: { w480: { url: 'http://localhost:3000/api/media/file/a-480x1.webp', width: 480 } } } as any)).toBe('/api/media/file/a-480x1.webp 480w, /api/media/file/a.webp 900w')
+  })
+})
+
+describe('httpUrl field validation', () => {
+  const v = (x: string | null) => (httpUrl as any)(x, {})
+  it('accepts web addresses and empty values', () => {
+    expect(v('https://instagram.com/monarch')).toBe(true)
+    expect(v('http://maps.example.com/?q=1')).toBe(true)
+    expect(v('')).toBe(true)
+    expect(v(null)).toBe(true)
+  })
+  it('rejects scripts and non-URLs', () => {
+    for (const x of ['javascript:alert(1)', 'data:text/html,x', 'instagram.com/x', '/relative', 'mailto:a@b.co']) expect(v(x), x).not.toBe(true)
   })
 })

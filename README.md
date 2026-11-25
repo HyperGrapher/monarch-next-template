@@ -2,7 +2,7 @@
 
 A reusable website starter. The first instance is **Monarch Architects**, a fictional architecture studio (Turkish default, English second). All people, projects, numbers and contact details in the demo are invented.
 
-* Next.js 16 (App Router) + React 19 · Payload 3.94.1 embedded · Lexical rich text
+* Next.js (App Router) + React · Payload CMS embedded · Lexical rich text (exact versions: `package.json`; kept current by the dependency-update workflow)
 * Vercel · Neon Postgres (database) · Vercel Blob (media)
 * Tailwind CSS v4 · GSAP + Lenis motion · a WebGL shader hero (ported from the `web-effects` repo)
 * Native Payload localization (`tr` default, `en`), controlled page-builder blocks
@@ -21,7 +21,7 @@ pnpm seed                       # fictional bilingual demo content + 11 photos (
 pnpm dev                        # http://localhost:3000  (redirects / → /tr)
 ```
 
-`/admin` → first visit shows Payload's “create first user” form. **The first user becomes `admin`.** Registration is closed as soon as one user exists. Never ship default credentials.
+`/admin` → first visit shows Payload's “create first user” form. **The first user becomes `admin`.** Registration is closed as soon as one user exists. Never ship default credentials. On a fresh deployment, **create the admin immediately**: until someone does, whoever opens `/admin` first can claim it.
 
 `pnpm seed` **deletes all content collections (not users, not contact messages)** before re-creating them. That is the “reset demo content” command.
 
@@ -63,6 +63,9 @@ Pages, services, projects, posts and the home page have drafts. Visitors only se
 
 **Live Preview** (admin edit view → *Live Preview* toggle) shows the page in an iframe next to the form, with Mobile/Tablet/Laptop widths, and follows your edits: pages, services, projects, posts and the home page autosave drafts (every ~1 s) and the iframe refreshes after each autosave (`<LivePreviewListener />` in the locale layout → `RefreshRouteOnSave`). The iframe loads the same `/api/preview` route (session required, Draft Mode), so what you see is the draft; visitors still only see published content. Autosaves never purge the public cache (`src/lib/revalidate.ts`). The landing pages (services/projects/blog/contact) have no drafts: their preview updates when you save, which publishes. Public routes are prerendered and cached (ISR). Any content change runs `revalidatePath('/', 'layout')` from collection/global `afterChange` hooks (`src/lib/revalidate.ts`), so published edits appear on the next request. Filters and pagination are path segments (`/projects/type/x`, `/blog/category/x/page/2`), not query strings, so they stay static.
 
+### Security
+Every response carries `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `X-Frame-Options: SAMEORIGIN`, `Content-Security-Policy: frame-ancestors 'self'` and a restrictive `Permissions-Policy` (`next.config.ts`). There is deliberately no full CSP (the Payload admin needs inline scripts). Payload's `csrf` allowlist is left empty: the session cookie is `SameSite=Lax`, so browsers do not send it with cross-site writes, and an allowlist would lock editors out when the admin is opened on another hostname (e.g. `www.` vs. the bare domain). To enable it anyway, set `csrf: ['https://example.com', 'https://www.example.com']` in `src/payload.config.ts` with every hostname the admin is used on.
+
 ### Contact form
 `POST /api/contact` validates server-side, applies a honeypot and a minimum-time check, and stores the message via the Local API. The collection denies all public access (REST/GraphQL); only staff can read. **No e-mail is sent** — delivery is intentionally not implemented.
 
@@ -77,7 +80,7 @@ Media uploaded before the sizes existed has no `srcset` (it falls back to the or
 2. **Vercel**: import the repo. Framework preset Next.js. **Build command: `pnpm vercel-build`** (applies migrations, then builds — the build prerenders pages from the database, so migrations must run first). Pick a Vercel region close to the Neon region.
 3. **Blob**: Storage tab → create a **public** Blob store and connect it to the project (this adds `BLOB_READ_WRITE_TOKEN`).
 4. **Environment variables**: `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SITE_URL` (production origin). Optional: `PREVIEW_SECRET`.
-5. First deploy, then seed once from your machine with the production values (this **wipes content collections**): `DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… PAYLOAD_SECRET=… pnpm seed`, and redeploy (or edit any content) so cached pages pick up the data. Then create the first admin at `/admin`.
+5. First deploy, then seed once from your machine with the production values (this **wipes content collections**): `DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… PAYLOAD_SECRET=… pnpm seed`, and redeploy (or edit any content) so cached pages pick up the data. **Create the first admin at `/admin` right after the first deploy** (the first visitor to that form becomes admin).
 
 ## Testing
 
@@ -95,7 +98,7 @@ The database helper requires PostgreSQL's `createdb` and `dropdb` commands on `P
 * `test:int` resets the test database (`payload run` drop + `payload migrate`) and uses the Local API with real access rules.
 * `test:e2e` runs against a **production build** (`tests/e2e/server.mjs`, port 3100, local disk media, no Blob token, no preview secret). It covers routing/locale behaviour, the home loader (including a failing hero image), contact API validation and honeypot, anonymous access, preview auth/open-redirect, admin sign-in, and that publishing an edit refreshes the cached public page while a saved draft does not.
 * The same suite covers both editions: URLs go through `tests/helpers/edition.ts`, and edition-specific tests skip themselves.
-* **CI** (`.github/workflows/ci.yml`): GitHub Actions runs type-check, lint, `test:int` and `test:e2e` on every push to **`main` only** (and on a manual run, which refuses to run off `main`). It needs no secrets: the tests use a throwaway Postgres service container. Failed runs upload `test-results/` and `playwright-report/` as an artifact. Other branches are not tested by CI; run the suite locally there.
+* **CI** (`.github/workflows/ci.yml`): GitHub Actions runs type-check, lint, `test:int` and `test:e2e` on **pull requests**, on pushes to `main`, and on a manual run. It needs no secrets: the tests use a throwaway Postgres service container. Failed runs upload `test-results/` and `playwright-report/` as an artifact. Work on a branch and open a PR: CI tests it before it reaches `main` (which Vercel deploys to production). To make that mandatory, mark the `test` check as required in GitHub → Settings → Branches.
 * **Schema drift guard** (`tests/int/schema.int.spec.ts`): fails when the collections plus the installed Payload/Drizzle versions would generate a migration that is not committed. It is what stops an automatic dependency update from reaching production with a changed schema.
 * **Automatic dependency updates** (`.github/workflows/dependency-updates.yml`): runs every day (edit the `cron` line for weekly; it can also be started from the Actions tab). It looks up newer versions on the npm registry and splits them into candidates: minor/patch per lockstep group (`payload` + `@payloadcms/*`, `next`, `react`, `tailwind`, ...), minor/patch of everything else, **major updates (the newest major, plus the next major step when they differ, so a too-new major cannot block the step before it)**, and a lockfile refresh. Each candidate is applied on top of `main` and tested on its own in parallel (type-check, lint, integration + e2e tests). The ones that pass are combined, tested once more and committed straight to `main` by `github-actions[bot]`; if `main` is protected it opens a PR with auto-merge instead, and if the combination with majors fails it falls back to the minor/patch updates only. A major that fails is left out, reported in the run summary and in an issue (*Dependency updates need attention*), and is not retried until a newer version of that package appears (or until you run the workflow with *retry_failed*). Settings (lockstep groups, ignored packages, majors that must not move such as `@types/node`) live in `scripts/deps/config.json`. Note that a push by the bot deploys to Vercel like any other push, and does not trigger `ci.yml` (the exact tree was just tested).
 * First-time Playwright setup: `pnpm exec playwright install chromium` (the CI image already has it).

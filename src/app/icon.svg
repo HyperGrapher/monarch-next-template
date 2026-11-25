@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Brand mark from src/components/ui/Logo.tsx on the brand colours (--color-ink / --color-paper). Replace per client. -->
+  <rect width="32" height="32" rx="6" fill="#0f0d14"/>
+  <path transform="translate(5 8.5) scale(1.2222)" fill="#f3eff7" d="M0 14V2l5 3V0l4 2.4L13 0v5l5-3v12h-4.5V8L9 11 4.5 8v6z"/>
+</svg>

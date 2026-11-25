@@ -48,7 +48,7 @@ export async function BlogView({ locale, category, page = 1 }: { locale: Locale;
         </ul>
       )}
       {res.totalPages > 1 && (
-        <nav aria-label="Pagination" className="t-label flex items-center justify-between px-gutter pb-section">
+        <nav aria-label={t.blog.pagination} className="t-label flex items-center justify-between px-gutter pb-section">
           {res.hasPrevPage ? <Link href={href(page - 1)} className="link-draw inline-flex min-h-11 items-center">← {t.blog.newer}</Link> : <span />}
           <span>{t.blog.page} {res.page} {t.blog.of} {res.totalPages}</span>
           {res.hasNextPage ? <Link href={href(page + 1)} className="link-draw inline-flex min-h-11 items-center">{t.blog.older} →</Link> : <span />}

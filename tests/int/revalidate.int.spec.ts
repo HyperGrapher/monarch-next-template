@@ -10,24 +10,24 @@ const call = (hook: any, args: Record<string, unknown>) => hook({ doc: { id: 1 }
 describe('cache purging', () => {
   beforeEach(() => revalidatePath.mockClear())
 
-  it('purges the site on a normal save and on delete', () => {
-    call(revalidateAfterChange, { req: { query: {} } })
+  it('purges the site on a normal save and on delete', async () => {
+    await call(revalidateAfterChange, { req: { query: {} } })
     call(revalidateAfterDelete, { req: { query: {} } })
     expect(revalidatePath).toHaveBeenCalledTimes(2)
     expect(revalidatePath).toHaveBeenCalledWith('/', 'layout')
   })
 
-  it('does NOT purge on Live Preview autosaves (they only write a draft while the editor types)', () => {
-    call(revalidateAfterChange, { req: { query: { autosave: 'true' } } })
+  it('does NOT purge on Live Preview autosaves (they only write a draft while the editor types)', async () => {
+    await call(revalidateAfterChange, { req: { query: { autosave: 'true' } } })
     expect(revalidatePath).not.toHaveBeenCalled()
   })
 
-  it('honours context.disableRevalidate (seed script)', () => {
-    call(revalidateAfterChange, { req: { query: {} }, context: { disableRevalidate: true } })
+  it('honours context.disableRevalidate (seed script)', async () => {
+    await call(revalidateAfterChange, { req: { query: {} }, context: { disableRevalidate: true } })
     expect(revalidatePath).not.toHaveBeenCalled()
   })
 
-  it('returns the document unchanged', () => {
-    expect(call(revalidateAfterChange, { req: { query: {} } })).toEqual({ id: 1 })
+  it('returns the document unchanged', async () => {
+    expect(await call(revalidateAfterChange, { req: { query: {} } })).toEqual({ id: 1 })
   })
 })
