@@ -54,7 +54,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <a href="#content" className="sr-only z-[200] bg-ink px-4 py-3 text-paper focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
           {t.skip}
         </a>
-        <Shell locale={locale} loadingLabel="Loading">
+        <Shell locale={locale} loadingLabel={t.loading}>
           {s?.announcement && (
             <p className="t-label m-0 bg-ink px-gutter py-2 text-center text-paper">{s.announcement}</p>
           )}

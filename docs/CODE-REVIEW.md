@@ -68,10 +68,10 @@ Step 5 status: done. `tsc`, lint 0 errors, `test:int` 55 passed, `test:e2e` 43 p
 
 ## Accessibility, i18n, UX
 
-- [ ] `error.tsx` / `not-found.tsx` always use the default locale (`useParams()` in the error page).
-- [ ] Hard-coded English: `loadingLabel="Loading"`, pagination `aria-label="Pagination"`.
-- [ ] `<dd>` before `<dt>` in the stats block and home Archive (invalid `dl`).
-- [ ] Contact form: `autoComplete="phone"` / `"message"` are invalid (`tel`, none); phone `maxLength` 120 vs server 40.
-- [ ] Type-filter and blog pagination pages share one title/description (duplicate titles).
-- [ ] No favicon (`src/app/icon.*`).
-- [ ] Privacy / Cookies / Imprint are plain text; the contact form collects personal data — a KVKK privacy notice linked from the form is normally needed.
+- [x] `error.tsx` / `not-found.tsx` always use the default locale (`useParams()` in the error page). **Done:** both read the locale from the URL (`src/lib/i18n/useLocale.ts`); e2e checks the English 404.
+- [x] Hard-coded English: `loadingLabel="Loading"`, pagination `aria-label="Pagination"`. **Done:** dictionary keys `loading`, `blog.pagination`.
+- [x] `<dd>` before `<dt>` in the stats block and home Archive (invalid `dl`). **Done:** `dt` first in the markup, `flex-col-reverse` keeps the number on top visually.
+- [x] Contact form: `autoComplete="phone"` / `"message"` are invalid (`tel`, none); phone `maxLength` 120 vs server 40. **Done:** `name`/`email`/`tel`, none on the message; input limits match the server (120/200/40).
+- [x] Type-filter and blog pagination pages share one title/description (duplicate titles). **Done:** "Projects — Housing", "Journal — Design — Page 2" (`withSuffix()` in `src/lib/seo.ts`); category pages use the category description; e2e checks it.
+- [x] No favicon (`src/app/icon.*`). **Done:** `src/app/icon.svg` from the logo mark (replace per client).
+- [ ] **Open — needs your decision.** Privacy / Cookies / Imprint are plain text; the contact form collects personal data — a KVKK privacy notice linked from the form is normally needed.

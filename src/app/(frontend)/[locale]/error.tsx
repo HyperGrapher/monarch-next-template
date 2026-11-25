@@ -1,10 +1,10 @@
 'use client'
 
-import { defaultLocale } from '../../../config/locales'
 import { getDictionary } from '../../../lib/i18n/dictionary'
+import { useLocale } from '../../../lib/i18n/useLocale'
 
 export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {
-  const t = getDictionary(defaultLocale)
+  const t = getDictionary(useLocale())
   return (
     <section className="flex min-h-[80vh] flex-col justify-center px-gutter pt-32 pb-section">
       <h1 className="t-display m-0 max-w-[14ch]">{t.error.title}</h1>

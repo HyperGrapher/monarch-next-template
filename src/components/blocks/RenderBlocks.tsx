@@ -99,9 +99,10 @@ export async function RenderBlocks({ blocks, locale }: Props) {
               {heading(b.heading)}
               <dl data-reveal="stagger" className="m-0 mt-10 grid grid-cols-2 border-t border-ink md:grid-cols-4">
                 {b.items.map((s) => (
-                  <div key={s.id} className="border-b border-rule py-6 pr-4">
-                    <dd className="t-display m-0 tabular-nums">{s.value}</dd>
+                  // dt before dd (valid <dl>); flex-col-reverse keeps the number visually on top.
+                  <div key={s.id} className="flex flex-col-reverse border-b border-rule py-6 pr-4">
                     <dt className="t-label mt-3 text-ash">{s.label}</dt>
+                    <dd className="t-display m-0 tabular-nums">{s.value}</dd>
                   </div>
                 ))}
               </dl>

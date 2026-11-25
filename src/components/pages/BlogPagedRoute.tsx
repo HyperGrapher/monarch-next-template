@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { isLocale } from '../../config/locales'
 import { getCategories, getLanding, getSettings } from '../../lib/queries'
-import { buildMetadata } from '../../lib/seo'
+import { buildMetadata, withSuffix } from '../../lib/seo'
+import { getDictionary } from '../../lib/i18n/dictionary'
 import type { JournalLanding } from '../../payload-types'
 import { BlogView } from './BlogView'
 
@@ -15,8 +16,11 @@ type P = { params: Promise<{ locale: string; category?: string; n?: string }> }
 export async function generateMetadata({ params }: P): Promise<Metadata> {
   const { locale, category, n } = await params
   if (!isLocale(locale)) return {}
-  const [l, s] = await Promise.all([getLanding<JournalLanding>('journal-landing', { locale }), getSettings({ locale })])
-  return buildMetadata({ locale, path: `/blog${category ? `/category/${category}` : ''}${n ? `/page/${n}` : ''}`, title: l?.title, description: l?.intro, seo: l?.seo, siteName: s?.companyName })
+  const [l, s, cats] = await Promise.all([getLanding<JournalLanding>('journal-landing', { locale }), getSettings({ locale }), getCategories({ locale })])
+  const t = getDictionary(locale)
+  const cat = category ? cats.find((c) => c.slug === category)?.name : null
+  const suffix = [cat, n ? `${t.blog.page} ${n}` : null].filter(Boolean).join(' — ')
+  return buildMetadata({ locale, path: `/blog${category ? `/category/${category}` : ''}${n ? `/page/${n}` : ''}`, ...withSuffix(l, suffix), description: l?.intro, siteName: s?.companyName })
 }
 
 export default async function BlogPagedRoute({ params }: P) {
