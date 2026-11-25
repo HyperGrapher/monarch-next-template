@@ -6734,6 +6734,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -6907,6 +6913,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_pages_v_autosave_idx": {
+          "name": "_pages_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -13698,6 +13719,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -13871,6 +13898,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_services_v_autosave_idx": {
+          "name": "_services_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -21128,6 +21170,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -21301,6 +21349,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_projects_v_autosave_idx": {
+          "name": "_projects_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -22182,6 +22245,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -22355,6 +22424,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_posts_v_autosave_idx": {
+          "name": "_posts_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -22914,6 +22998,162 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": false
+        },
+        "focal_x": {
+          "name": "focal_x",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "focal_y": {
+          "name": "focal_y",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_url": {
+          "name": "sizes_w480_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_width": {
+          "name": "sizes_w480_width",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_height": {
+          "name": "sizes_w480_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_mime_type": {
+          "name": "sizes_w480_mime_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_filesize": {
+          "name": "sizes_w480_filesize",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w480_filename": {
+          "name": "sizes_w480_filename",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_url": {
+          "name": "sizes_w800_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_width": {
+          "name": "sizes_w800_width",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_height": {
+          "name": "sizes_w800_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_mime_type": {
+          "name": "sizes_w800_mime_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_filesize": {
+          "name": "sizes_w800_filesize",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w800_filename": {
+          "name": "sizes_w800_filename",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_url": {
+          "name": "sizes_w1200_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_width": {
+          "name": "sizes_w1200_width",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_height": {
+          "name": "sizes_w1200_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_mime_type": {
+          "name": "sizes_w1200_mime_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_filesize": {
+          "name": "sizes_w1200_filesize",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1200_filename": {
+          "name": "sizes_w1200_filename",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_url": {
+          "name": "sizes_w1600_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_width": {
+          "name": "sizes_w1600_width",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_height": {
+          "name": "sizes_w1600_height",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_mime_type": {
+          "name": "sizes_w1600_mime_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_filesize": {
+          "name": "sizes_w1600_filesize",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sizes_w1600_filename": {
+          "name": "sizes_w1600_filename",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -22958,6 +23198,66 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "media_sizes_w480_sizes_w480_filename_idx": {
+          "name": "media_sizes_w480_sizes_w480_filename_idx",
+          "columns": [
+            {
+              "expression": "sizes_w480_filename",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "media_sizes_w800_sizes_w800_filename_idx": {
+          "name": "media_sizes_w800_sizes_w800_filename_idx",
+          "columns": [
+            {
+              "expression": "sizes_w800_filename",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "media_sizes_w1200_sizes_w1200_filename_idx": {
+          "name": "media_sizes_w1200_sizes_w1200_filename_idx",
+          "columns": [
+            {
+              "expression": "sizes_w1200_filename",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "media_sizes_w1600_sizes_w1600_filename_idx": {
+          "name": "media_sizes_w1600_sizes_w1600_filename_idx",
+          "columns": [
+            {
+              "expression": "sizes_w1600_filename",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -26988,6 +27288,12 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": false
+        },
+        "autosave": {
+          "name": "autosave",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -27131,6 +27437,21 @@
           "columns": [
             {
               "expression": "latest",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_home_page_v_autosave_idx": {
+          "name": "_home_page_v_autosave_idx",
+          "columns": [
+            {
+              "expression": "autosave",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -28783,6 +29104,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "9d0d147f-69be-4f5c-92c4-b752978026e1",
+  "id": "b74de776-ed92-4490-b67b-fc92a13324a3",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

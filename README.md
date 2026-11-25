@@ -40,6 +40,17 @@ pnpm dev                        # http://localhost:3000  (redirects / → /tr)
 
 **Schema changes ship as migrations** (`pnpm payload migrate:create <name>`); dev auto-push is disabled (`push: false`). Drizzle may ask “created or renamed?” interactively — in a non-interactive shell, answer via a TTY.
 
+**Migration history was flattened** into a single `20261125_111345_initial` (from here on, add new migrations on top; never flatten a database that is already live for a client). A database created *before* the flatten (it already ran the five old migrations) must be told the new baseline is applied, **once, before the next deploy**, otherwise the deploy tries to create existing tables and fails:
+
+```sql
+INSERT INTO payload_migrations (name, batch, updated_at, created_at)
+VALUES ('20261125_111345_initial', 1, now(), now());
+-- optional tidy-up of the old names:
+DELETE FROM payload_migrations WHERE name IN ('20261123_210116_initial','20261123_223908_blob_object_key',
+  '20261124_202626_live_preview_autosave','20261124_220901_publish_home_page','20261124_224226_responsive_image_sizes');
+```
+Only do this on a database that ran all five old migrations (check: `SELECT name FROM payload_migrations;`).
+
 ## Architecture
 
 ```
