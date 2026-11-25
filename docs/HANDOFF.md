@@ -1,6 +1,6 @@
 # Handoff — Monarch Architects starter
 
-Branch: `main` (deployed to Vercel: https://monarch-next-template.vercel.app). Stack: Next 16.4.6 · React 19.2.9 · Payload 3.94.1 · **Neon Postgres** (`@payloadcms/db-postgres`) · **Vercel Blob** (`@payloadcms/storage-vercel-blob`). Source brief: [`monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo.
+Branch: `main` (deployed to Vercel: https://monarch-next-template.vercel.app). Stack (versions in `package.json`): Next 16 · React 19 · Payload 3 · **Neon Postgres** (`@payloadcms/db-postgres`) · **Vercel Blob** (`@payloadcms/storage-vercel-blob`). Source brief: [`monarch-architects-starter-prompt.md`](monarch-architects-starter-prompt.md). Design reference: the `web-effects` repo.
 
 History: the site first ran on Cloudflare Workers + D1 + R2 (OpenNext). The Free plan's 10 ms CPU limit caused Error 1102 on the admin and uncached routes even after ISR caching, so it was moved to Vercel + Neon + Blob. The last Cloudflare version is commit `8c75093`.
 

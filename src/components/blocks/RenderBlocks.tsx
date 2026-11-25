@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { localePath, type Locale } from '../../config/locales'
-import { getDictionary } from '../../lib/i18n/dictionary'
 import { resolveHref, isExternal } from '../../lib/links'
 import { img } from '../../lib/media'
 import { getProjects, getServices } from '../../lib/queries'
@@ -25,7 +24,6 @@ const Btn = ({ href, children, locale, tone = 'signal' }: { href: string; childr
 
 export async function RenderBlocks({ blocks, locale }: Props) {
   if (!blocks?.length) return null
-  const t = getDictionary(locale)
   const out = await Promise.all(
     blocks.map(async (b) => {
       switch (b.blockType) {
@@ -191,6 +189,5 @@ export async function RenderBlocks({ blocks, locale }: Props) {
       }
     }),
   )
-  void t
   return <>{out}</>
 }

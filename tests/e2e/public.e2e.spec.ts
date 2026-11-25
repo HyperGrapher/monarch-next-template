@@ -69,6 +69,10 @@ test.describe('locales and routing', () => {
     expect((await request.get(url('/blog/category/nope'))).status()).toBe(404)
     expect((await request.get(url('/blog/page/99'))).status()).toBe(404)
     expect((await request.get(url('/blog/page/1'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/design'))).status()).toBe(200)
+    expect((await request.get(url('/blog/category/design/page/99'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/nope/page/2'))).status()).toBe(404)
+    expect((await request.get(url('/blog/category/design/page/x'))).status()).toBe(404)
   })
 
   test('unknown pages return a real 404 with the styled not-found page', async ({ page }) => {

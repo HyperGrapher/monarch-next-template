@@ -1,7 +1,7 @@
 {
   "name": "monarch-next-template",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "Reusable company-website starter: Next.js + Payload CMS (Postgres, Blob storage), bilingual by default.",
   "license": "MIT",
   "type": "module",
   "scripts": {

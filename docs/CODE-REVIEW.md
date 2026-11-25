@@ -48,12 +48,14 @@ Step 4 status: done. `tsc`, `test:int` 53 passed, `test:e2e` 43 passed.
 
 ## Step 5 — Cleanup
 
-- [ ] Cloudflare leftovers: `public/_headers`, OpenNext / `.dev.vars` lines and duplicate `/media` in `.gitignore`.
-- [ ] Template leftovers: `src/app/my-route/route.ts` (public), `.npmrc` (`legacy-peer-deps` is ignored by pnpm), `.yarnrc`, `images.localPatterns` in `next.config.ts`, unused `CONTACT_EMAIL_*` vars in `.env.example`, `package.json` description.
+- [x] Cloudflare leftovers: `public/_headers`, OpenNext / `.dev.vars` lines and duplicate `/media` in `.gitignore`. **Removed.**
+- [x] Template leftovers: `src/app/my-route/route.ts` (public), `.npmrc` (`legacy-peer-deps` is ignored by pnpm), `.yarnrc`, `images.localPatterns` in `next.config.ts`, unused `CONTACT_EMAIL_*` vars in `.env.example`, `package.json` description. **All removed / fixed.**
 - [x] `Media` `beforeChange` dimension hook + `image-size` look redundant (Payload 3.94 probes dimensions without sharp) — verify with one upload, then remove. **Removed** (sharp now reads dimensions; the upload e2e test checks `width`).
-- [ ] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`.
-- [ ] Validate `social[].url` and `mapUrl` as `https?://` URLs.
-- [ ] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1).
+- [x] Merge the duplicate `blog/page/[n]` and `blog/category/[category]/page/[n]` pages; remove `void t` / unused `t` in `RenderBlocks.tsx`. **Done:** both routes re-export `src/components/pages/BlogPagedRoute.tsx`; e2e covers the category variant's 200/404s.
+- [x] Validate `social[].url` and `mapUrl` as `https?://` URLs. **Done:** `httpUrl` in `src/fields/url.ts`, unit-tested.
+- [x] Docs drift: HANDOFF/README say Payload 3.94.1 / React 19.2.9 (installed: 3.94.2 / 19.3.1). **Done:** the docs point to `package.json` instead of pinning numbers the dependency bot keeps changing.
+
+Step 5 status: done. `tsc`, lint 0 errors, `test:int` 55 passed, `test:e2e` 43 passed.
 
 ## Merged: `live-admin-preview` (reviewed)
 

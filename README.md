@@ -2,7 +2,7 @@
 
 A reusable website starter. The first instance is **Monarch Architects**, a fictional architecture studio (Turkish default, English second). All people, projects, numbers and contact details in the demo are invented.
 
-* Next.js 16 (App Router) + React 19 · Payload 3.94.1 embedded · Lexical rich text
+* Next.js (App Router) + React · Payload CMS embedded · Lexical rich text (exact versions: `package.json`; kept current by the dependency-update workflow)
 * Vercel · Neon Postgres (database) · Vercel Blob (media)
 * Tailwind CSS v4 · GSAP + Lenis motion · a WebGL shader hero (ported from the `web-effects` repo)
 * Native Payload localization (`tr` default, `en`), controlled page-builder blocks

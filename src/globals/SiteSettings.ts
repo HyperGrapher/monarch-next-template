@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { staffOnly } from '../access'
+import { httpUrl } from '../fields/url'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -34,13 +35,13 @@ export const SiteSettings: GlobalConfig = {
               labels: { singular: 'Address line', plural: 'Address lines' },
               fields: [{ name: 'line', type: 'text', required: true }],
             },
-            { name: 'mapUrl', type: 'text', admin: { description: 'Link to your location on a map (no API key needed).' } },
+            { name: 'mapUrl', type: 'text', validate: httpUrl, admin: { description: 'Link to your location on a map (no API key needed), starting with https://' } },
             {
               name: 'social',
               type: 'array',
               fields: [
                 { name: 'label', type: 'text', required: true },
-                { name: 'url', type: 'text', required: true },
+                { name: 'url', type: 'text', required: true, validate: httpUrl, admin: { description: 'Full address, e.g. https://instagram.com/…' } },
               ],
             },
           ],

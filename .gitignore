@@ -49,8 +49,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
-# OpenNext
-
-.dev.vars
-/media
 .neon
