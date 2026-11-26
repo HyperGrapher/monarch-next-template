@@ -159,6 +159,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+      actions: write # start CI on the PR branch (see "Commit to main")
 
     services:
       postgres:
@@ -284,7 +285,10 @@ jobs:
               --body "$(printf 'Automated dependency update. The exact tree was tested by the Dependency updates workflow.\n\n%s\n' "$(cat deps-commit-body.txt)")") || url=""
           fi
           if [ -n "$url" ]; then
-            gh pr merge "$url" --auto --squash || echo "::warning::Could not enable auto-merge on $url (enable it in the repository settings)."
+            # Events made with GITHUB_TOKEN do not start other workflows, except workflow_dispatch. Start CI on the
+            # branch so the required "test" check reports on this commit; auto-merge then merges once it is green.
+            gh workflow run ci.yml --ref "$branch" || echo "::warning::Could not start CI on $branch; run it manually from the Actions tab."
+            gh pr merge "$url" --auto --squash || echo "::warning::Could not enable auto-merge on $url (Settings → General → Pull Requests → 'Allow auto-merge')."
             echo "result=pull-request" >> "$GITHUB_OUTPUT"
           else
             echo "::error::Could not push to main or open a pull request (check branch protection and 'Allow GitHub Actions to create pull requests')."
